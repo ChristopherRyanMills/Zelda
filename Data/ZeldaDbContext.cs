@@ -8,6 +8,10 @@ public class ZeldaDbContext : IdentityDbContext<IdentityUser>
 {
     private readonly IConfiguration _configuration;
     public DbSet<UserProfile> UserProfiles { get; set; }
+    public DbSet<DungeonResponse> Dungeons {get; set; }
+    public DbSet<DungeonPopulation> DungeonPopulations {get; set; }
+    public DbSet<MonsterResponse> Monsters {get; set; }
+    public DbSet<UserDungeon> UserDungeons {get; set; }
 
     public ZeldaDbContext(DbContextOptions<ZeldaDbContext> context, IConfiguration config) : base(context)
     {
