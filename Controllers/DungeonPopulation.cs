@@ -18,22 +18,22 @@ public class DungeonPopulationController : ControllerBase
         _dbContext = context;
     }
 
-    [HttpGet]
-    [Authorize]
-    public IActionResult Get()
+    [HttpGet("user/{id}")]
+    //[Authorize]
+    public IActionResult GetByUserId(int id)
     {
-        return Ok(_dbContext.DungeonPopulations.ToList());
+        return Ok(_dbContext.DungeonPopulations.Include(dp => dp.UserDungeon).Where(dp => dp.UserDungeon.UserId == id).ToList());
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    //[Authorize]
     public IActionResult GetById(int id)
     {
         return Ok(_dbContext.DungeonPopulations.SingleOrDefault(dp => dp.Id == id));
     }
 
     [HttpPost]
-    [Authorize]
+    //[Authorize]
     public IActionResult CreateDungeonPopulation(DungeonPopulation dungeonPopulation)
     {
         _dbContext.DungeonPopulations.Add(dungeonPopulation);
@@ -42,7 +42,7 @@ public class DungeonPopulationController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    //[Authorize]
     public IActionResult DeleteDungeonPopulation(int id)
     {
         DungeonPopulation deleteMe = _dbContext.DungeonPopulations.SingleOrDefault(dp => dp.Id == id);

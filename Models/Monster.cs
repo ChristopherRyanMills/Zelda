@@ -4,6 +4,8 @@ namespace Zelda.Models;
 
 public class MonsterResponse
 {
+    public int Id {get; set; }
+    
     [JsonPropertyName("success")]
     public bool Success {get; set; }
 

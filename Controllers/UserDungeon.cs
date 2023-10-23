@@ -18,11 +18,11 @@ public class UserDungeonController : ControllerBase
         _dbContext = context;
     }
 
-    [HttpGet]
+    [HttpGet("user/{id}")]
     [Authorize]
-    public IActionResult Get()
+    public IActionResult GetUsersDungeons(int id)
     {
-        return Ok(_dbContext.UserDungeons.ToList());
+        return Ok(_dbContext.UserDungeons.Where(ud => ud.UserId == id).ToList());
     }
 
     [HttpGet("{id}")]

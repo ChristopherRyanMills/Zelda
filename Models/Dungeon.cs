@@ -7,6 +7,8 @@ public class DungeonResponse
     [JsonPropertyName("success")]
     public bool Success {get; set; }
 
+    public int Id {get; set; }
+
     [JsonPropertyName("count")]
     public int Count {get; set; }
 

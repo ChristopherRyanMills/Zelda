@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import { AuthorizedRoute } from "./auth/AuthorizedRoute";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
+import { Home } from "./home/Home";
+import { DungeonForm } from "./dungeon/DungeonForm";
 
 export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
   return (
@@ -10,14 +12,18 @@ export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
         <Route
           index
           element={
-            <AuthorizedRoute loggedInUser={loggedInUser}>
+            <AuthorizedRoute loggedInUser={loggedInUser}> 
+              <Home loggedInUser={loggedInUser}   />
+              <Routes>
+              <Route path="/new" element = {<DungeonForm />} />
+              </Routes>
             </AuthorizedRoute>
           }
-        />
-        <Route
-          path="login"
-          element={<Login setLoggedInUser={setLoggedInUser} />}
-        />
+          />
+          <Route
+            path="login"
+            element={<Login setLoggedInUser={setLoggedInUser} />}
+          />
         <Route
           path="register"
           element={<Register setLoggedInUser={setLoggedInUser} />}

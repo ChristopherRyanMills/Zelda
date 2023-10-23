@@ -452,3 +452,5 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+Migrations/20231020190540_InitialCreate.Designer.cs
+Migrations/20231020190540_InitialCreate.cs
