@@ -22,7 +22,7 @@ public class DungeonPopulationController : ControllerBase
     //[Authorize]
     public IActionResult GetByUserId(int id)
     {
-        return Ok(_dbContext.DungeonPopulations.Include(dp => dp.UserDungeon).Where(dp => dp.UserDungeon.UserId == id).ToList());
+        return Ok(_dbContext.DungeonPopulations.Where(dp => dp.UserDungeonId == id).ToList());
     }
 
     [HttpGet("{id}")]
