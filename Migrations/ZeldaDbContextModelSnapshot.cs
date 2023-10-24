@@ -52,7 +52,7 @@ namespace Zelda.Migrations
                         new
                         {
                             Id = "c3aaeb97-d2ba-4a53-a521-4eea61e59b35",
-                            ConcurrencyStamp = "6768940a-5d73-4468-88ea-2b18e7c2ead3",
+                            ConcurrencyStamp = "d285fd60-d4be-4311-806c-c04254215048",
                             Name = "Admin",
                             NormalizedName = "admin"
                         });
@@ -151,13 +151,13 @@ namespace Zelda.Migrations
                         {
                             Id = "dbc40bc6-0829-4ac5-a3ed-180f5e916a5f",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "76220a43-167f-4f08-8cfa-f1e847efd60f",
+                            ConcurrencyStamp = "75751fe9-de7d-41fe-8546-5b98c042defb",
                             Email = "admina@strator.comx",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAEAACcQAAAAEPLP4M9diKcz3dMZz4Q2tLiomAjgeOTuJmLqDt3pV8MFHXM05fgCiiBaXBkEKnX6nQ==",
+                            PasswordHash = "AQAAAAEAACcQAAAAEJ0DEeSrwJSEBZjvBB0/hLJfqyhB+/Jc+7CkzJcH4rRrUD2i64/5DZBthePZHdPsaA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "35458aad-0c5c-43db-b36d-c3e5e6d9bc60",
+                            SecurityStamp = "f60d7afd-7ac8-47c1-9b0e-237289e733dc",
                             TwoFactorEnabled = false,
                             UserName = "Administrator"
                         });
@@ -263,17 +263,10 @@ namespace Zelda.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("MonsterId1")
-                        .HasColumnType("integer");
-
                     b.Property<int>("UserDungeonId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MonsterId1");
-
-                    b.HasIndex("UserDungeonId");
 
                     b.ToTable("DungeonPopulations");
                 });
@@ -382,20 +375,10 @@ namespace Zelda.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("DungeonId1")
-                        .HasColumnType("integer");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserProfileId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("DungeonId1");
-
-                    b.HasIndex("UserProfileId");
 
                     b.ToTable("UserDungeons");
                 });
@@ -492,25 +475,6 @@ namespace Zelda.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Zelda.Models.DungeonPopulation", b =>
-                {
-                    b.HasOne("Zelda.Models.MonsterResponse", "Monster")
-                        .WithMany()
-                        .HasForeignKey("MonsterId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Zelda.Models.UserDungeon", "UserDungeon")
-                        .WithMany()
-                        .HasForeignKey("UserDungeonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Monster");
-
-                    b.Navigation("UserDungeon");
-                });
-
             modelBuilder.Entity("Zelda.Models.DungeonResponse+Dungeon", b =>
                 {
                     b.HasOne("Zelda.Models.DungeonResponse", null)
@@ -523,25 +487,6 @@ namespace Zelda.Migrations
                     b.HasOne("Zelda.Models.MonsterResponse", null)
                         .WithMany("Data")
                         .HasForeignKey("MonsterResponseId");
-                });
-
-            modelBuilder.Entity("Zelda.Models.UserDungeon", b =>
-                {
-                    b.HasOne("Zelda.Models.DungeonResponse", "Dungeon")
-                        .WithMany()
-                        .HasForeignKey("DungeonId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Zelda.Models.UserProfile", "UserProfile")
-                        .WithMany()
-                        .HasForeignKey("UserProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Dungeon");
-
-                    b.Navigation("UserProfile");
                 });
 
             modelBuilder.Entity("Zelda.Models.UserProfile", b =>

@@ -14,12 +14,10 @@ export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
           element={
             <AuthorizedRoute loggedInUser={loggedInUser}> 
               <Home loggedInUser={loggedInUser}   />
-              <Routes>
-              <Route path="/new" element = {<DungeonForm />} />
-              </Routes>
             </AuthorizedRoute>
           }
           />
+          <Route path="/new" element = {<DungeonForm  loggedInUser={loggedInUser}/>} />
           <Route
             path="login"
             element={<Login setLoggedInUser={setLoggedInUser} />}
