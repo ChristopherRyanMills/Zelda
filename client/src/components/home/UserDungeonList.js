@@ -31,12 +31,12 @@ export const UserDungeonList = ({dungeonPopulations, userDungeons, dungeonPopula
                     {/*this is returning undefined but refreshing is fine*/}
                     <div className="monster_box">
                         {dungeonPopulationsMap[ud.id]?.map(mp => {
-                            const matchingMon = monsterArray.find(mon => mon.id === mp.monsterId)
+                            const matchingMon = monsterArray?.find(mon => mon.id === mp.monsterId)
 
-                            return <p>{matchingMon.name}</p>
+                            return <p>{matchingMon?.name}</p>
                         })}
                     </div>
-                    <Button>Edit</Button>
+                    <Button onClick={()=> navigate(`/edit/${ud.id}`)}>Edit</Button>
                     <Button onClick={()=> deleteButton(ud.id)}>Delete</Button>
                 </div>
             })}

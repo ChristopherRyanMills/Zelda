@@ -4,6 +4,11 @@ export const getDungeonsByUser = (id) => {
     return fetch(`${_apiUrl}/user/${id}`).then((res) => res.json())
 }
 
+//get single userDungeon
+export const getSingleUserDungeon = (id) => {
+    return fetch(`${_apiUrl}/${id}`).then((res) => res.json())
+}
+
 //post new user dungeon
 export const makeNewUserDungeon = (obj) => {
     return fetch(`${_apiUrl}`, {

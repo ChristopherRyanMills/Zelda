@@ -15,3 +15,10 @@ export const makeNewPopulation = (obj) => {
         },
         body: JSON.stringify(obj)}).then((res) => res.json())
 }
+
+//remove dungeon pop by Id
+export const removeDungeonPopById = (id) => {
+    return fetch(`${_apiUrl}/${id}`, {
+        method: "DELETE"
+    })
+}
