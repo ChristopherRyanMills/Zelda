@@ -4,6 +4,7 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import { Home } from "./home/Home";
 import { DungeonForm } from "./dungeon/DungeonForm";
+import { EditDungeonForm } from "./dungeon/EditDungeonForm";
 
 export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
   return (
@@ -18,6 +19,7 @@ export default function ApplicationViews({ loggedInUser, setLoggedInUser }) {
           }
           />
           <Route path="/new" element = {<DungeonForm  loggedInUser={loggedInUser}/>} />
+          <Route path="/edit/:udId" element = {<EditDungeonForm  loggedInUser={loggedInUser}/>} />
           <Route
             path="login"
             element={<Login setLoggedInUser={setLoggedInUser} />}

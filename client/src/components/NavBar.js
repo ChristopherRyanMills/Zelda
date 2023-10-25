@@ -21,7 +21,7 @@ return (
     <div>
     <Navbar color="light" light fixed="true" expand="lg">
         <NavbarBrand className="mr-auto" tag={RRNavLink} to="/">
-        Legend of Zelda: A Link to My Ass
+        Legend of Zelda: Dungeoneer
         </NavbarBrand>
         {loggedInUser ? (
         <>
