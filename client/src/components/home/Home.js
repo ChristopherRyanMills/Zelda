@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { UserDungeonList } from "./UserDungeonList"
 import { getDungeonsByUser } from "../../managers/userDungeonManager"
 import { GetPopulationByUserId } from "../../managers/dungeonPopulationManager"
-import { Button } from "reactstrap"
+import { Button, Card } from "reactstrap"
 import { useNavigate } from "react-router-dom"
 export const Home = ({ loggedInUser }) => {
     console.log(loggedInUser);
@@ -31,18 +31,20 @@ export const Home = ({ loggedInUser }) => {
     }, [userDungeons])
 
     return (
-        <>
-        <div className="user_container">
+        <><div className="bg-dark dungeonformcontainer text-center">
+        <Card className="bg-dark text-white-50">
             <h2>Welcome, {loggedInUser.firstName}.</h2>
-        </div>
+        </Card>
 
-        <div className="dungeon_list_container">
-            <h3>Your Dungeons</h3>
+        <div className='bg-dark text-white-50 pt-5'>
+            <h3 className="fw-bold">Your Dungeons</h3>
             {userDungeons ?  (
                 <UserDungeonList dungeonPopulations={dungeonPopulations} userDungeons={userDungeons} dungeonPopulationsMap={dungeonPopulationsMap} rerender={rerender}/>
             ) : <p>Wow. Many blank. Much empty.</p>
             }
-            <Button onClick={() => {navigate("/new")}}>Populate a Dungeon</Button>
+            <Button onClick={() => {navigate("/new")}} color="success" className="mt-2 mb-5">Populate a Dungeon</Button>
+        </div>
+        <Button onClick={() => {navigate("/game")}} color="success" className="mt-4">I hate this site! I wanna play Zelda!</Button>
         </div>
         </>
     )

@@ -19,7 +19,7 @@ const toggleNavbar = () => setOpen(!open);
 
 return (
     <div>
-    <Navbar color="light" light fixed="true" expand="lg">
+    <Navbar color="dark" dark fixed="true" expand="lg">
         <NavbarBrand className="mr-auto" tag={RRNavLink} to="/">
         Legend of Zelda: Dungeoneer
         </NavbarBrand>
