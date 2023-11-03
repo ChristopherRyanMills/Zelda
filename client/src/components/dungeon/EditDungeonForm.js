@@ -52,12 +52,12 @@ export const EditDungeonForm = () => {
     }
 
     return (
-        <>
-            <h2>Edit Page</h2>
-            <h3>{matchingD?.name}</h3>
+        <><div className="bg-dark text-white-50 dungeonformcontainer text-center">
+            <h2 className="text-danger">Edit Dungeon</h2>
+            <h3 className="text-danger">{matchingD?.name}</h3>
             <p>{matchingD?.description}</p>
             <form>
-            <h3>Monster List</h3>
+            <h3 className="text-danger">Monster List</h3>
             <fieldset>
                 <div className="checkboxContainer">
                     {monsterArray?.map((mon) => (
@@ -73,9 +73,9 @@ export const EditDungeonForm = () => {
                     ))}
                 </div>
             </fieldset>
-            <Button onClick={() =>{navigate("/")}}>Done</Button>
+            <Button onClick={() =>{navigate("/")}} className="mt-5">Done</Button>
             </form>
-            
+            </div>
         </>
     )
 }

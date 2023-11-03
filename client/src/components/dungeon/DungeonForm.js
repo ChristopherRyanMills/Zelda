@@ -50,9 +50,9 @@ export const DungeonForm = ({ loggedInUser }) => {
     }
 
     return (
-        <>
+        <><div className="bg-dark text-white-50 dungeonformcontainer text-center">
             <form onSubmit={(e)=>{handleSubmitClick(e)}}>
-            <h2>Dungeon Selector</h2>
+            <h2 className="text-danger">Dungeon Selector</h2>
             <fieldset>
                 <label htmlFor="dungeon">Dungeon:</label>
                 <select onChange={
@@ -62,14 +62,14 @@ export const DungeonForm = ({ loggedInUser }) => {
                         update(copy)
                     }
                 }>
-                    <option value="0">I am a dropdown...</option>
+                    <option value="0">Select Dungeon</option>
                         {dungeonArray.map((d) => {
                             return <option value={d.id}>{d.name}</option>
                         })}
                 </select>
             </fieldset>
             {/*Should there be a button to lock in the dungeon type? How do? */}
-            <h3>Monster List</h3>
+            <h3 className="text-danger">Monster List</h3>
             <fieldset>
                 <div className="checkboxContainer">
                     {monsterArray.map((mon) => (
@@ -85,9 +85,10 @@ export const DungeonForm = ({ loggedInUser }) => {
                     ))}
                 </div>
             </fieldset>
-            <Button>Submit</Button>
+            <Button className="mt-3">Submit</Button>
             {/*onClick={(e) => handleSubmitClick(e)} */}
             </form>
+            </div>
         </>
     )
     //monster selector

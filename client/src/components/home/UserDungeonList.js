@@ -27,7 +27,7 @@ export const UserDungeonList = ({dungeonPopulations, userDungeons, dungeonPopula
                 // const matchingPops = dungeonPopulations.filter(dp => dp.userDungeon.id === ud.id)
 
                 return <div className="dungeon_card">
-                    <h3>{matchingD?.name}</h3>
+                    <h3 className="fw-bold text-success mt-5">{matchingD?.name}</h3>
                     {/*this is returning undefined but refreshing is fine*/}
                     <div className="monster_box">
                         {dungeonPopulationsMap[ud.id]?.map(mp => {
@@ -36,8 +36,8 @@ export const UserDungeonList = ({dungeonPopulations, userDungeons, dungeonPopula
                             return <p>{matchingMon?.name}</p>
                         })}
                     </div>
-                    <Button onClick={()=> navigate(`/edit/${ud.id}`)}>Edit</Button>
-                    <Button onClick={()=> deleteButton(ud.id)}>Delete</Button>
+                    <Button onClick={()=> navigate(`/edit/${ud.id}`)} color="info" className="mb-3">Edit</Button>
+                    <Button onClick={()=> deleteButton(ud.id)} color="danger" className="ms-2 mb-3">Delete</Button>
                 </div>
             })}
         </>
