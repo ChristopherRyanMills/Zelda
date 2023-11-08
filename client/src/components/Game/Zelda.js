@@ -68,7 +68,7 @@ export const ZeldaGame = () => {
             downPressed = true
             lastButtonPressed = "down"
         }
-        if(evt.keyCode == "32" && canAttackAgain){
+        if(evt.keyCode == "32" && canAttackAgain && hasSword){
             //on spacebar, enter attack state
             isAttacking = true
             currentAnimation = 0
@@ -342,6 +342,57 @@ export const ZeldaGame = () => {
             }
         }
 
+        const getBounceLoc = (gObject, ignoresObjects, direction) => {
+
+            //enemy bounce 1 tile in the direction link is facing
+            let currRow = Math.floor(gObject.y/16)
+            let currCol = Math.floor(gObject.x/16)
+
+            if(direction == "up") {
+                if(gameMap[currRow - 1][currCol] == 2){
+                    gObject.bounceY = gObject.y - 16
+                    gObject.bounceX = gObject.x
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "down") {
+                if(gameMap[currRow + 1][currCol] == 2){
+                    gObject.bounceY = gObject.y + 16
+                    gObject.bounceX = gObject.x
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "left") {
+                if(gameMap[currRow][currCol - 1] == 2){
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x - 16
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "right") {
+                if(gameMap[currRow][currCol + 1] == 2){
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x + 16
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+        }
+
         const gameObjectCollision = (x, y, objects, isLink, isSword) => {
             if (isLink) {
                 for(let i = 0; i<objects.length; i++){
@@ -417,6 +468,8 @@ export const ZeldaGame = () => {
                             y + swordH >= objects[i].y){
                                 //now you are colliding, if enemy, remove health
                                 if(objects[i].isEnemy){
+                                    objects[i].needsBounce = true
+                                    getBounceLoc(objects[i], false, lastButtonPressed)
                                     objects[i].health -= 1
                                     if(objects[i].health <= 0){
                                         //if 0 health, enemy become dead
@@ -568,6 +621,28 @@ export const ZeldaGame = () => {
                             }
                             if(gameObjects[i].frame == 1){
                                 ctx.drawImage(enemy, 90, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                            }
+                        }
+
+                        if(gameObjects[i].needsBounce){
+                            if(gameObjects[i].x != gameObjects[i].bounceX){
+                                if(gameObjects[i].bounceX > gameObjects[i].x){
+                                    gameObjects[i].x += 4
+                                }
+                                else {
+                                    gameObjects[i].x -= 4
+                                }
+                            }
+                            if(gameObjects[i].y != gameObjects[i].bounceY){
+                                if(gameObjects[i].bounceY > gameObjects[i].y){
+                                    gameObjects[i].y += 4
+                                }
+                                else {
+                                    gameObjects[i].y -= 4
+                                }
+                            }
+                            else {
+                                gameObjects[i].needsBounce = false
                             }
                         }
                     }
