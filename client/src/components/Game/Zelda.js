@@ -10,6 +10,7 @@ import enemySrc from './enemies.png'
 import slashWav from './sounds/LOZ_Sword_Slash.wav'
 import deadWav from './sounds/LOZ_Enemy_Die.wav'
 import hitWav from './sounds/LOZ_Enemy_Hit.wav'
+import getRupee from './sounds/LOZ_Get_Rupee.wav'
 
 export const ZeldaGame = () => {
     const canvasRef = useRef(null)
@@ -406,7 +407,14 @@ export const ZeldaGame = () => {
                                 linkX = objects[i].newLinkX
                                 linkY = objects[i].newLinkY
                             }
-                            if(objects[i].isPickupItem){
+
+                            else if(objects[i].isRupee){
+                                rupeeAmount += objects[i].rupeeValue
+                                objects.splice(i, 1)
+                                playSound(getRupee)
+                            }
+
+                            else if(objects[i].isPickupItem){
                                 playPickupItemAnimation = true
                             switch(gameObjects[i].pickupItemNum){
                                 case 0: 
@@ -643,8 +651,54 @@ export const ZeldaGame = () => {
                             }
                             else {
                                 gameObjects[i].needsBounce = false
+                                //item drops
+                                if(gameObjects[i].health <= 0) {
+                                    let rupeeChance = Math.floor(Math.random()*10)
+                                    if(rupeeChance < 10) {
+                                        let rupeeObject = GameObject()
+                                        rupeeObject.x = gameObjects[i].x + 4
+                                        rupeeObject.y = gameObjects[i].y
+                                        rupeeObject.width = 8
+                                        rupeeObject.height = 16
+                                        rupeeObject.isRupee = true
+                                        rupeeObject.rupeeImage = 0
+                                        let rupeeValueChance = Math.floor(Math.random()*10)
+                                        if(rupeeValueChance < 2){
+                                            rupeeObject.rupeeValue = 5
+                                        }
+                                        else {
+                                            rupeeObject.rupeeValue = 1
+                                        }
+                                        gameObjects.push(rupeeObject)
+                                        gameObjects.splice(i, 1)
+                                    }
+                                }
                             }
                         }
+                    }
+                }
+                if(gameObjects[i].isRupee) {
+                    //the 1 rupee alternates between 2 colors, the 5 is solid
+                    if(gameObjects[i].rupeeValue == 1){
+                        gameObjects[i].counter++
+                        if(gameObjects[i].counter % 5 == 0){
+                            gameObjects[i].rupeeImage += 1
+                        }
+                        if(gameObjects[i].rupeeImage > 1){
+                            gameObjects[i].rupeeImage = 0
+                        }
+                        //draw the two rupee images
+                        if(gameObjects[i].rupeeImage == 0){
+                            ctx.drawImage(link, 244, 225, 8, 16, gameObjects[i].x, gameObjects[i].y, 8, 16)
+
+                        }
+                        else{
+                            ctx.drawImage(link, 274, 225, 8, 16, gameObjects[i].x, gameObjects[i].y, 8, 16)
+                        }
+                    }
+
+                    else {
+                        ctx.drawImage(link, 274, 225, 8, 16, gameObjects[i].x, gameObjects[i].y, 8, 16)
                     }
                 }
             }
