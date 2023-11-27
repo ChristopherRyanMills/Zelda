@@ -44,7 +44,7 @@ export const Home = ({ loggedInUser }) => {
             }
             <Button onClick={() => {navigate("/new")}} color="success" className="mt-2 mb-5">Populate a Dungeon</Button>
         </div>
-        <Button onClick={() => {navigate("/game")}} color="success" className="mt-4">I hate this site! I wanna play Zelda!</Button>
+        <Button onClick={() => {navigate("/game")}} color="success" className="mt-4">Play your dungeon!</Button>
         </div>
         </>
     )
