@@ -11,6 +11,7 @@ import slashWav from './sounds/LOZ_Sword_Slash.wav'
 import deadWav from './sounds/LOZ_Enemy_Die.wav'
 import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
+import { Maps } from "./Maps"
 
 export const ZeldaGame = () => {
     const canvasRef = useRef(null)
@@ -106,7 +107,7 @@ export const ZeldaGame = () => {
         let linkX = 116
         let linkY = 135
         let gameObjects = []
-        let maps = []
+        let maps = Maps()
         let gameMap = null
         let lasPickUpItem = 0
         let playPickupItemAnimation = false
