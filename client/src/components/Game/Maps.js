@@ -1,8 +1,4 @@
-export const Maps = () => {
-
-
-let maps = []
-const GameObject = () => {
+export const GameObject = () => {
     return {
         x: 0,
         y: 0,
@@ -52,10 +48,14 @@ const GameObject = () => {
         shootCounter: 0
     }
 }
-const MapBundle = (m, o) => {
+export const MapBundle = (m, o) => {
     return {map : m,
             gameobjects : o}
 }
+
+export const Maps = () => {
+
+let maps = []
 
 let gO = GameObject()
 

@@ -11,7 +11,7 @@ import slashWav from './sounds/LOZ_Sword_Slash.wav'
 import deadWav from './sounds/LOZ_Enemy_Die.wav'
 import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
-import { Maps } from "./Maps"
+import { GameObject, MapBundle, Maps } from "./Maps"
 
 export const ZeldaGame = () => {
     const canvasRef = useRef(null)
@@ -46,6 +46,7 @@ export const ZeldaGame = () => {
     let canAttackAgain = true
 
     let lastButtonPressed = "up"
+    let gO = GameObject()
 
     const playSound = (src) => {
         let sound = new Audio()
@@ -92,6 +93,7 @@ export const ZeldaGame = () => {
             downPressed = false
         }
     }
+
     document.addEventListener("keydown", keyDownHandler, false)
     document.addEventListener("keyup", keyUpHandler, false)
     
@@ -106,9 +108,104 @@ export const ZeldaGame = () => {
         document.body.style.zoom = "321%"
         let linkX = 116
         let linkY = 135
-        let gameObjects = []
         let maps = Maps()
-        let gameMap = null
+        let gameObjects = maps[119].gameobjects
+        let gameMap = maps[119].map
+        let currentMap = 119
+        const portalExists = (x, y) => {
+            for(let i = 0; i < gameObjects.length; i++){
+                if(gameObjects[i].x == x && gameObjects[i].y == y && gameObjects[i].isPortal){
+                    //if there is an object at x,y and it is a portal
+                    return true
+                }
+            }
+        }
+        const addMapGameObjects = (levelMap, objectArray) => {
+            // look through map array and if there is a walkable edge, make transition to next map
+            const walkableSpaces = [2,28,18,6,12,14,24,30,34,58,64,70,75,76,77,
+                93,94,95,111,112,113,81,82,86,99,100,101,117,118,119,87,88,89,105,
+                106,107,123,124,125,126,127,128,129,131,132,133,134,135,137,138,139,
+                140,141,143]
+    
+            for(let i = 4; i < levelMap.length; i++){
+    
+                for(let j = 0; j < levelMap[0].length; j++){
+                    if(i == 4){ //top of the screen
+                        if(walkableSpaces.includes(levelMap[i][j])){
+                            gO = GameObject()
+                            gO.x = j * 16
+                            gO.y = 3 * 16
+                            gO.width = 16
+                            gO.height = 16
+                            gO.newMap = currentMap - 16
+                            gO.newLinkX = (j * 16) - 16
+                            gO.newLinkY = 223
+                            gO.isPortal = true
+                            //shifts up down is for moving across screens vertically
+                            gO.shiftsUpDown = true
+                            if(!portalExists(gO.x, gO.y)){ //if portal does not already exist here
+                                gameObjects.push(gO)
+                            }
+                        }
+                    }
+                    if(i == 14){ //bottom of the screen
+                        if(walkableSpaces.includes(levelMap[i][j])){
+                            gO = GameObject()
+                            gO.x = j * 16
+                            gO.y = (i + 1) * 16
+                            gO.width = 16
+                            gO.height = 16
+                            gO.newMap = currentMap + 16
+                            gO.newLinkX = (j * 16) + 1
+                            gO.newLinkY = 81
+                            gO.isPortal = true
+                            //shifts up down is for moving across screens vertically
+                            gO.shiftsUpDown = true
+                            if(!portalExists(gO.x, gO.y)){
+                                gameObjects.push(gO)
+                            }
+                        }
+                    }
+                    if(j == 0){ //left side of the screen
+                        if(walkableSpaces.includes(levelMap[i][j])){
+                            gO = GameObject()
+                            gO.x = -16
+                            gO.y = i * 16
+                            gO.width = 16
+                            gO.height = 16
+                            gO.newMap = currentMap - 1
+                            gO.newLinkX = 223
+                            gO.newLinkY = (i * 16) - 1
+                            gO.isPortal = true
+                            //shifts left right is for moving across screens horizontal
+                            gO.shiftsLeftRight = true
+                            if(!portalExists(gO.x, gO.y)){
+                                gameObjects.push(gO)
+                            }
+                        }
+                    }
+                    if(j == 15){ //right side of the screen
+                        if(walkableSpaces.includes(levelMap[i][j])){
+                            gO = GameObject()
+                            gO.x = 256
+                            gO.y = i * 16
+                            gO.width = 16
+                            gO.height = 16
+                            gO.newMap = currentMap + 1
+                            gO.newLinkX = 1
+                            gO.newLinkY = (i * 16) - 2
+                            gO.isPortal = true
+                            //shifts left right is for moving across screens horizontal
+                            gO.shiftsLeftRight = true
+                            if(!portalExists(gO.x, gO.y)){
+                                gameObjects.push(gO)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        addMapGameObjects(gameMap, gameObjects)
         let lasPickUpItem = 0
         let playPickupItemAnimation = false
         let rupeeAmount = 0
@@ -118,190 +215,143 @@ export const ZeldaGame = () => {
         let bombAmount = 5
 
         //!Game Object (literally everything that isn't link or the map tiles)
-        const GameObject = () => {
-            return {
-                x: 0,
-                y: 0,
-                width: 0,
-                height: 0,
-                newMap: 0, 
-                newLinkX: 0,
-                newLinkY: 0,
-                isPortal: false,
-                counter: 0,
-                imageNum: 0,
-                isText: false,
-                line1Full: "",
-                line2Full: "",
-                line1Current: "",
-                line2Current: "",
-                line1X: 0,
-                line1Y: 0,
-                line2X: 0,
-                line2Y: 0,
-                isOldMan: false,
-                isPickupItem: false,
-                pickupItemNum: 0,
-                isFlame: false,
-                isOldWoman: false,
-                isEnemy: false,
-                enemyType: 0,
-                nextX: 0,
-                nextYL: 0,
-                isAttacking: false,
-                health: 0,
-                direction: "up",
-                enemy: [],
-                counter: 0,
-                frame: 0,
-                needsBounce: false,
-                bounceX: 0,
-                bounceY: 0
-            }
-        }
-
-        const MapBundle = (m, o) => {
-            return {map : m,
-                    gameobjects : o}
-        }
-
-        let map7_7 = [
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 61, 61, 61, 61, 61, 61, 61,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-            [ 61, 61, 61, 61, 28, 61, 62,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-            [ 61, 61, 61, 62,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-            [ 61, 61, 62,  2,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-            [ 61, 62,  2,  2,  2,  2,  2,  2,  2, 60, 61, 61, 61, 61, 61, 61],
-            [  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2],
-            [ 43, 44,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 43, 43],
-            [ 61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
-            [ 61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
-            [ 61, 61, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 61, 61],
-            [ 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61]]
-            let objects7_7 = []
+        // let map7_7 = [
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 61, 61, 61, 61, 61, 61, 61,  2,  2, 61, 61, 61, 61, 61, 61, 61],
+        //     [ 61, 61, 61, 61, 28, 61, 62,  2,  2, 61, 61, 61, 61, 61, 61, 61],
+        //     [ 61, 61, 61, 62,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
+        //     [ 61, 61, 62,  2,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
+        //     [ 61, 62,  2,  2,  2,  2,  2,  2,  2, 60, 61, 61, 61, 61, 61, 61],
+        //     [  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2],
+        //     [ 43, 44,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 43, 43],
+        //     [ 61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
+        //     [ 61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
+        //     [ 61, 61, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 61, 61],
+        //     [ 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61]]
+        //     let objects7_7 = []
     
-            let gO = {
-                x : 72,
-                y : 72,
-                width : 8,
-                height : 16,
-                newMap : 1,
-                newLinkX : 120,
-                newLinkY : 220,
-                isPortal : true
-            }
+        //     gO = {
+        //         x : 72,
+        //         y : 72,
+        //         width : 8,
+        //         height : 16,
+        //         newMap : 1,
+        //         newLinkX : 120,
+        //         newLinkY : 220,
+        //         isPortal : true
+        //     }
 
-            objects7_7.push(gO)
+        //     objects7_7.push(gO)
             
-            let octorok= GameObject()
-            octorok.x = 160
-            octorok.y = 184
-            octorok.width = 16
-            octorok.height = 16
-            octorok.isEnemy = true
-            octorok.enemyType = 1
-            objects7_7.push(octorok)
+        //     let octorok= GameObject()
+        //     octorok.x = 160
+        //     octorok.y = 184
+        //     octorok.width = 16
+        //     octorok.height = 16
+        //     octorok.isEnemy = true
+        //     octorok.enemyType = 1
+        //     objects7_7.push(octorok)
 
 
-            let bundle = MapBundle(map7_7, objects7_7)
-            maps.push(bundle)
+        //     let bundle = MapBundle(map7_7, objects7_7)
+        //     maps.push(bundle)
     
-            //evt.key returns the character pressed on keyboard
-            //set the states to determine direction link faces
-            let mapWoodSword = [
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-            [ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
-            [ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-            [ 55, 55, 37, 37, 37, 37, 37, 28, 28, 37, 37, 37, 37, 37, 55, 55],
-            [ 55, 55, 55, 55, 55, 55, 55, 28, 28, 55, 55, 55, 55, 55, 55, 55]];
-            let gameObjectsWoodSword = []
+        //     //evt.key returns the character pressed on keyboard
+        //     //set the states to determine direction link faces
+        //     let mapWoodSword = [
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
+        //     [ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
+        //     [ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
+        //     [ 55, 55, 37, 37, 37, 37, 37, 28, 28, 37, 37, 37, 37, 37, 55, 55],
+        //     [ 55, 55, 55, 55, 55, 55, 55, 28, 28, 55, 55, 55, 55, 55, 55, 55]];
+        //     let gameObjectsWoodSword = []
 
-            gO = GameObject()
-            gO.x = 72
-            gO.y = 128
-            gO.width = 16
-            gO.height = 16
-            gO.isFlame = true
-            gameObjectsWoodSword.push(gO)
+        //     gO = GameObject()
+        //     gO.x = 72
+        //     gO.y = 128
+        //     gO.width = 16
+        //     gO.height = 16
+        //     gO.isFlame = true
+        //     gameObjectsWoodSword.push(gO)
 
-            gO = GameObject()
-            gO.x = 168
-            gO.y = 128
-            gO.width = 16
-            gO.height = 16
-            gO.isFlame = true
-            gameObjectsWoodSword.push(gO)
+        //     gO = GameObject()
+        //     gO.x = 168
+        //     gO.y = 128
+        //     gO.width = 16
+        //     gO.height = 16
+        //     gO.isFlame = true
+        //     gameObjectsWoodSword.push(gO)
 
-            gO = GameObject()
-            gO.x = (7 * 16) + 8
-            gO.y = 128
-            gO.width = 16
-            gO.height = 16
-            gO.isOldMan = true
-            gameObjectsWoodSword.push(gO)
+        //     gO = GameObject()
+        //     gO.x = (7 * 16) + 8
+        //     gO.y = 128
+        //     gO.width = 16
+        //     gO.height = 16
+        //     gO.isOldMan = true
+        //     gameObjectsWoodSword.push(gO)
 
-            gO = GameObject()
-            gO.x = 124
-            gO.y = 152
-            gO.width = 8
-            gO.height = 16
-            gO.isPickupItem = true
-            gO.pickupItemNum = 14
-            gameObjectsWoodSword.push(gO)
+        //     gO = GameObject()
+        //     gO.x = 124
+        //     gO.y = 152
+        //     gO.width = 8
+        //     gO.height = 16
+        //     gO.isPickupItem = true
+        //     gO.pickupItemNum = 14
+        //     gameObjectsWoodSword.push(gO)
 
-            gO = GameObject()
-            gO.isText = true
-            gO.line1Full = "IT'S DANGEROUS TO GO"
-            gO.line2Full = "ALONE! TAKE THIS!"
-            gO.line1X = 3 * 16
-            gO.line1Y = 7 * 16
-            gO.line2X = 4 * 16
-            gO.line2Y = (8 * 16) - 6
-            gameObjectsWoodSword.push(gO)
+        //     gO = GameObject()
+        //     gO.isText = true
+        //     gO.line1Full = "IT'S DANGEROUS TO GO"
+        //     gO.line2Full = "ALONE! TAKE THIS!"
+        //     gO.line1X = 3 * 16
+        //     gO.line1Y = 7 * 16
+        //     gO.line2X = 4 * 16
+        //     gO.line2Y = (8 * 16) - 6
+        //     gameObjectsWoodSword.push(gO)
 
-            //portals
+        //     //portals
     
-            gO = {
-                x : 112,
-                y : 240,
-                width : 16,
-                height : 16,
-                newMap : 0,
-                newLinkX : 68,
-                newLinkY : 96,
-                isPortal : true
-            }
-            gameObjectsWoodSword.push(gO)
+        //     gO = {
+        //         x : 112,
+        //         y : 240,
+        //         width : 16,
+        //         height : 16,
+        //         newMap : 0,
+        //         newLinkX : 68,
+        //         newLinkY : 96,
+        //         isPortal : true
+        //     }
+        //     gameObjectsWoodSword.push(gO)
     
-            gO = {
-                x : 128,
-                y : 240,
-                width : 16,
-                height : 16,
-                newMap : 0,
-                newLinkX : 68,
-                newLinkY : 96,
-                isPortal : true
-            }
-            gameObjectsWoodSword.push(gO)
+        //     gO = {
+        //         x : 128,
+        //         y : 240,
+        //         width : 16,
+        //         height : 16,
+        //         newMap : 0,
+        //         newLinkX : 68,
+        //         newLinkY : 96,
+        //         isPortal : true
+        //     }
+        //     gameObjectsWoodSword.push(gO)
     
-            bundle = MapBundle(mapWoodSword, gameObjectsWoodSword)
-            maps.push(bundle)
-            gameMap = maps[0].map
-            gameObjects = maps[0].gameobjects
+        //     bundle = MapBundle(mapWoodSword, gameObjectsWoodSword)
+        //     maps.push(bundle)
+        //     gameMap = maps[0].map
+        //     gameObjects = maps[0].gameobjects
         
     
 
@@ -405,8 +455,20 @@ export const ZeldaGame = () => {
                             if (objects[i].isPortal) {
                                 gameMap = maps[objects[i].newMap].map
                                 gameObjects = maps[objects[i].newMap].gameobjects
-                                linkX = objects[i].newLinkX
-                                linkY = objects[i].newLinkY
+                                currentMap = objects[i].newMap
+                                addMapGameObjects(gameMap, gameObjects)
+                                
+                                if(objects[i].shiftsLeftRight){
+                                    linkX = objects[i].newLinkX
+                                }
+                                else if(objects[i].shiftsUpDown){
+                                    linkY = objects[i].newLinkY
+                                }
+                                else {
+                                    linkX = objects[i].newLinkX
+                                    linkY = objects[i].newLinkY
+                                }
+                                continue
                             }
 
                             else if(objects[i].isRupee){
