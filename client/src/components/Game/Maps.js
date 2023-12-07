@@ -31,6 +31,7 @@ export const GameObject = () => {
         isAttacking: false,
         health: 0,
         direction: "up",
+        enemyPath: [],
         enemy: [],
         counter: 0,
         frame: 0,
