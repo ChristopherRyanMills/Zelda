@@ -353,7 +353,113 @@ export const ZeldaGame = () => {
         //     gameMap = maps[0].map
         //     gameObjects = maps[0].gameobjects
         
-    
+        const Pos = (row, col) => {
+            return {r: row,
+            c: col}
+        }
+
+        const Node = (parent, position) => {
+            return {parent: parent,
+                    position: position,
+                    g: 0, //cost (distance) from current node to start (real)
+                    h: 0, // cost from current node to final node 
+                    f: 0  // actual cost (total + estimate)
+                }
+        }
+
+        // using A* search method from https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
+
+        const aStar = (start, end, maze) => {
+            const startNode = Node(null, start) //start is the OG parent for everything
+            let endNode = Node(null, end)
+            let openList = [] //all nodes you can get to from current position
+            let closedList = [] // nodes already checked
+
+            openList.push(startNode)
+            while(openList.length > 0){
+                //while we have moves available
+                let currentNode = openList[0]
+                let currentIndex = 0
+                for(let i = 0; i < openList.length; i++){
+                    if(openList[i].f < currentNode.f) {
+                        //this is just the distance checker you used in the paint app
+                        currentNode = openList[i]
+                        currentIndex = i
+                    }
+                }
+                openList.splice(currentIndex, 1)
+                closedList.push(currentNode)
+                if(currentNode.position.r === endNode.position.r && currentNode.position.c === endNode.position.c){
+                    //found the target, current node matches end node, return path
+                    let path = []
+                    let current = currentNode
+                    while(current != null){
+                        // work from the end of the maze, keep daisy chaining call parents of each node
+                        path.push(current.position)
+                        current = current.parent
+                    }
+                    return path
+                }
+                let children = []
+                let positions = [Pos(0, -1), Pos(0, 1), Pos(1, 0), Pos(-1, 0)] //adjacent positions to current tile, up down left and right
+                for(let i = 0; i < positions.length; i++){
+                    let nodePosition = Pos(currentNode.position.r + positions[i].r, currentNode.position.c + positions[i].c)
+                    if(nodePosition.r > (maze.length - 1) || nodePosition.r < 0 || 
+                    nodePosition.c > (maze[0].length - 1) || nodePosition.c < 0){
+                        //these are bad positions, don't keep them
+                        continue
+                    }
+                    if(maze[nodePosition.r][nodePosition.c] != 2){
+                        //if the position is not a 2 on the map, get rid of it
+                        continue
+                    }
+                    let newNode = Node(currentNode, nodePosition)
+                    children.push(newNode)
+                }
+
+                for (let i = 0; i < children.length; i++){
+                    for(let j = 0; j < closedList.length; j++){
+                        if(children[i].position.r === closedList[j].position.r &&
+                            children[i].position.c === closedList[j].position.c ){
+                                //checking to see if the child is in the closed list of children, if so it is not the shortest distance
+                                continue
+                            }
+                    }
+                    children[i].g = currentNode.g + 1 //adding a tile adds 1 to cost
+                    children[i].h = ((children[i].position.r - endNode.position.r) * (children[i].position.r - endNode.position.r)) + ((children[i].position.c - endNode.position.c) * (children[i].position.c - endNode.position.c))
+                    children[i].f = children[i].g + children[i].h
+
+                    for (let j = 0; j < openList.length; j++){
+                        //if child is on open list, keep going
+                        if(children[i].position.r === openList[j].position.r &&
+                            children[i].position.c === openList[j].position.c && 
+                            children[i].g > openList[j].g){
+                                continue
+                            }
+                    }
+
+                    openList.push(children[i])
+                }
+            }
+        }
+
+        const getNewCoordinates = (currentRow, currentCol, index) => {
+            let randRow = Math.floor(Math.random() * 11) + 4 //get row in map from 4-15 (top 4 rows are the HUD)
+            let randCol = Math.floor(Math.random() * 15) //all columns can be occupied
+            while(gameMap[randRow][randCol] != 2){
+                // if not 2, it cannot traverse to it, choose another
+                randRow = Math.floor(Math.random() * 11) + 4
+                randCol = Math.floor(Math.random() * 15)
+            }
+
+            gameObjects[index].enemyPath = aStar(Pos(currentRow, currentCol), Pos(randRow, randCol), gameMap)
+
+            while(gameObjects[index].enemyPath === 0){
+                randRow = Math.floor(Math.random() * 11) + 4
+                randCol = Math.floor(Math.random() * 15)
+                gameObjects[index].enemyPath = aStar(Pos(currentRow, currentCol), Pos(randRow, randCol), gameMap)
+            }
+        }
 
         const drawMap = (level) => {
             for(let i = 0; i < level.length; i++)
@@ -655,6 +761,59 @@ export const ZeldaGame = () => {
                     //type 1 = octoroks
                     if(gameObjects[i].enemyType == 1){
                         gameObjects[i].counter++
+
+                        //using A* pathfinding from python scripts
+                        if(gameObjects[i].enemyPath == null || gameObjects[i].enemyPath.length === 0){
+                            //once we get to our destination, make a new destination to go to
+                            //get current coordinate and check if new coordinate is reachable
+                            let currRow = Math.floor(gameObjects[i].y/16)
+                            let currCol = Math.floor(gameObjects[i].x/16)
+                            getNewCoordinates(currRow, currCol, i)
+                        }
+                        if(gameObjects[i].needsToShoot) {
+                            gameObjects[i].shootCounter++
+                            if (gameObjects[i].shootCounter === 100){
+                                //enemies sit for a while before they shoot
+                                projectile = GameObject()
+                                projectile.x = gameObjects[i].x
+                                projectile.y = gameObjects[i].y
+                                if(gameObjects[i].direction === "down"){
+                                    projectile.ySpeed = 2
+                                }
+                                if(gameObjects[i].direction === "up"){
+                                    projectile.ySpeed = -2
+                                }
+                                if(gameObjects[i].direction === "right"){
+                                    projectile.xSpeed = 2
+                                }
+                                if(gameObjects[i].direction === "left"){
+                                    projectile.xSpeed = -2
+                                }
+                                projectile.waterProjectile = false
+                                projectile.isPortal = false
+                                projectile.isRupee = false
+                                projectile.rockProjectile = true
+                                gameObjects.push(projectile)
+                            }
+                            if(gameObjects[i].shootCounter > 130){
+                                gameObjects[i].needsToShoot = false
+                                gameObjects[i].shootCounter = 0
+                            }
+                        }
+                        else {
+                            if(gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1] != null &&
+                                gameObjects[i].nextX === gameObjects[i].x && gameObjects[i].nextY === gameObjects[i].y){
+                                //if current position in enemy path is not null
+                                gameObjects[i].nextX = gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1].c * 16
+                                gameObjects[i].nextY = gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1].r * 16
+                                gameObjects[i].enemyPath.splice(gameObjects[i].enemyPath.length - 1, 1)
+
+                                let chance = Math.floor(Math.random() * 60)
+                                if (chance === 0){
+                                    gameObjects[i].needsToShoot = true
+                                }
+                            }
+                        }
                         if(gameObjects[i].counter >= 10){
                             gameObjects[i].frame++
                             gameObjects[i].counter = 0
@@ -736,6 +895,44 @@ export const ZeldaGame = () => {
                                         gameObjects.splice(i, 1)
                                     }
                                 }
+                            }
+                        }
+                        else if(gameObjects[i].enemyPath.length != 0){
+                            if(gameObjects[i].x != gameObjects[i].nextX){
+                                //if current x != X we are going to, figure out if it is less than or more than current
+                                if(gameObjects[i].nextX > gameObjects[i].x){
+                                    if(gameObjects[i].counter % gameObjects[i].speed === 0){
+                                        gameObjects[i].x += 2
+                                        gameObjects[i].direction = "right"
+                                    }
+                                }
+                                else if(gameObjects[i].nextX < gameObjects[i].x){
+                                    if(gameObjects[i].counter % gameObjects[i].speed === 0){
+                                        gameObjects[i].x -= 2
+                                        gameObjects[i].direction = "left"
+                                    }
+                                }
+                            }
+                            else if(gameObjects[i].y != gameObjects[i].nextY){
+                                //if current x != X we are going to, figure out if it is less than or more than current
+                                if(gameObjects[i].nextY > gameObjects[i].y){
+                                    if(gameObjects[i].counter % gameObjects[i].speed === 0){
+                                        gameObjects[i].y += 2
+                                        gameObjects[i].direction = "down"
+                                    }
+                                }
+                                else if(gameObjects[i].nextY < gameObjects[i].y){
+                                    if(gameObjects[i].counter % gameObjects[i].speed === 0){
+                                        gameObjects[i].y -= 2
+                                        gameObjects[i].direction = "up"
+                                    }
+                                }
+                            }
+                            else if(gameObjects[i].enemyPath.length === 1){
+                                //get rid of current path and set x to next x
+                                gameObjects[i].enemyPath = []
+                                gameObjects[i].x = gameObjects[i].nextX
+                                gameObjects[i].y = gameObjects[i].nextY
                             }
                         }
                     }

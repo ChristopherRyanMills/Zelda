@@ -27,7 +27,7 @@ export const GameObject = () => {
         isEnemy: false,
         enemyType: 0,
         nextX: 0,
-        nextYL: 0,
+        nextY: 0,
         isAttacking: false,
         health: 0,
         direction: "up",
