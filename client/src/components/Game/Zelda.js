@@ -11,6 +11,8 @@ import slashWav from './sounds/LOZ_Sword_Slash.wav'
 import deadWav from './sounds/LOZ_Enemy_Die.wav'
 import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
+import shieldWav from './sounds/LOZ_Shield.wav'
+import linkHurtWav from './sounds/LOZ_Link_Hurt.wav'
 import { GameObject, MapBundle, Maps } from "./Maps"
 
 export const ZeldaGame = () => {
@@ -44,6 +46,9 @@ export const ZeldaGame = () => {
     let hasSword = false
     let isAttacking = false
     let canAttackAgain = true
+    let linkNeedsToBounce = false
+    let linkInvincible = false
+    let invincibleTime = 0
 
     let lastButtonPressed = "up"
     let gO = GameObject()
@@ -461,6 +466,19 @@ export const ZeldaGame = () => {
             }
         }
 
+        const damageLink = (obj, gameObjectArray, index) => {
+            playSound(linkHurtWav)
+            if(obj.waterProjectile || obj.rockProjectile){
+                gameObjectArray.splice(index, 1)
+            }
+            currentLinkHearts -= 0.5
+            linkInvincible = true
+            invincibleTime = 30 //30 cycles so like 1/2 second
+            if (currentLinkHearts <= 0){
+                //! insert link dying animation and game end
+            }
+        }
+
         const drawMap = (level) => {
             for(let i = 0; i < level.length; i++)
             {
@@ -624,7 +642,22 @@ export const ZeldaGame = () => {
                                 }
                                 objects.splice(i, 1)
                                 animationCounter = 0
+                                continue
                             }
+                            if((objects[i].waterProjectile || objects[i].rockProjectile || objects[i].isEnemy)
+                                && !linkNeedsToBounce && !linkInvincible){
+                                    //check shield deflect projectile
+                                    if(objects[i].rockProjectile && 
+                                        ((lastButtonPressed === "up" && objects[i].ySpeed > 0) || 
+                                        (lastButtonPressed === "down" && objects[i].ySpeed < 0) ||
+                                        (lastButtonPressed === "left" && objects[i].xSpeed > 0) ||
+                                        (lastButtonPressed === "right" && objects[i].xSpeed < 0))) {
+                                            playSound(shieldWav)
+                                            objects.splice(i, 1)
+                                            return
+                                        }
+                                    damageLink(objects[i], objects, i)
+                                }
                         }
                 }
             }
@@ -936,6 +969,49 @@ export const ZeldaGame = () => {
                             }
                         }
                     }
+                    if(gameObjects[i].enemyType === 2) {
+                        //water shoot boy
+                        gameObjects[i].counter++
+                        if(gameObjects[i].counter < 240){
+                            ctx.drawImage(enemySrc, 180, 300, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                        }
+                        else if(gameObjects[i].counter === 240) {
+                            //fire projectile, make object
+                            projectile = GameObject()
+                            projectile.x = gameObjects[i].x
+                            projectile.y = gameObjects[i].y
+                            projectile.width = 8
+                            projectile.height = 10
+                            projectile.waterProjectile = true
+                            projectile.isPortal = false
+
+                            const adjustedX = gameObjects[i].x - linkX
+                            const adjustedY = gameObjects[i].y - linkY
+                            const angle = -1 * Math.atan2(adjustedX, adjustedY) - Math.PI/2
+
+                            projectile.angle = angle
+                            gameObjects.push(projectile)
+                        }
+                        else if(gameObjects[i].counter < 420) {
+                            // return under the water
+
+                        }
+                        else {
+                            let count = 0
+                            let newCol = Math.floor(Math.random()*16)
+                            let newRow = Math.floor(Math.random()*11) + 4
+                            while(count < 10 || gameMap[newRow[newCol]] != 91){
+                                newCol = Math.floor(Math.random()*16)
+                                newRow = Math.floor(Math.random()*11) + 4
+                                count++
+                            }
+                            if(gameMap[newRow[newCol]] === 91){
+                                gameObjects[i].x = newCol * 16
+                                gameObjects[i].y = newRow * 16
+                            }
+                            gameObjects[i].counter = 0
+                        }
+                    }
                 }
                 if(gameObjects[i].isRupee) {
                     //the 1 rupee alternates between 2 colors, the 5 is solid
@@ -960,6 +1036,34 @@ export const ZeldaGame = () => {
                     else {
                         ctx.drawImage(link, 274, 225, 8, 16, gameObjects[i].x, gameObjects[i].y, 8, 16)
                     }
+                }
+                if(gameObjects[i].rockProjectile){
+                    ctx.drawImage(enemySrc, 90, 300, 16, 16, gameObjects[i].x, gameObjects[i].y, 10, 10)
+                    gameObjects[i].x += gameObjects[i].xSpeed //will only move x or y
+                    gameObjects[i].y += gameObjects[i].ySpeed
+                    if(gameObjects[i].x < 0 || gameObjects[i].x > 256 || gameObjects[i].y < 0 || gameObjects[i].y > 240) {
+                        gameObjects.splice(i, 1)
+                        return
+                    }
+                }
+                if(gameObjects[i].waterProjectile){
+                    gameObjects[i].counter += 1
+                    if(gameObjects[i].counter === 0){
+                        ctx.drawImage(enemySrc, 334, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10)
+                    }
+                    else if(gameObjects[i].counter === 1){
+                        ctx.drawImage(enemySrc, 364, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10)
+                    }
+                    else {
+                        ctx.drawImage(enemySrc, 394, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10)
+                        gameObjects[i].counter = -1
+                    }
+                    gameObjects[i].x += Math.cos(gameObjects[i].angle)
+                    gameObjects[i].y += Math.sin(gameObjects[i].angle)
+                    if(gameObjects[i].x < 0 || gameObjects[i].x > 256 || gameObjects[i].y < 0 || gameObjects[i].y > 240) {
+                        gameObjects.splice(i, 1)
+                    }
+                    return
                 }
             }
         }
@@ -1250,6 +1354,10 @@ export const ZeldaGame = () => {
                 ctx.fillStyle = "rgb(20,20,20)"
                 ctx.fillRect(0,0,256,240)
                 //game code to be run every frame
+                invincibleTime--
+                if(invincibleTime <= 0){
+                    linkInvincible = false
+                }
                 drawMap(gameMap)
                 drawLink()
                 gameObjectCollision(linkX, linkY, gameObjects, true)
