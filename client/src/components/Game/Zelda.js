@@ -8,6 +8,7 @@ import itemmp3 from './sounds/Item.mp3'
 import textWav from './sounds/LOZ_Text_Slow.wav'
 import enemySrc from './enemies.png'
 import slashWav from './sounds/LOZ_Sword_Slash.wav'
+import shootWav from './sounds/LOZ_Sword_Shoot.wav'
 import deadWav from './sounds/LOZ_Enemy_Die.wav'
 import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
@@ -47,6 +48,7 @@ export const ZeldaGame = () => {
     let isAttacking = false
     let canAttackAgain = true
     let linkNeedsToBounce = false
+    let canShootSword = true
     let linkInvincible = false
     let invincibleTime = 0
 
@@ -81,6 +83,7 @@ export const ZeldaGame = () => {
             isAttacking = true
             currentAnimation = 0
             canAttackAgain = false
+            canShootSword = true
             playSound(slashWav)
         }
     }
@@ -115,6 +118,7 @@ export const ZeldaGame = () => {
         let linkY = 135
         let maps = Maps()
         let gameObjects = maps[119].gameobjects
+        let projectiles = []
         let gameMap = maps[119].map
         let currentMap = 119
         const portalExists = (x, y) => {
@@ -162,7 +166,7 @@ export const ZeldaGame = () => {
                             gO.height = 16
                             gO.newMap = currentMap + 16
                             gO.newLinkX = (j * 16) + 1
-                            gO.newLinkY = 81
+                            gO.newLinkY = 65
                             gO.isPortal = true
                             //shifts up down is for moving across screens vertically
                             gO.shiftsUpDown = true
@@ -179,7 +183,7 @@ export const ZeldaGame = () => {
                             gO.width = 16
                             gO.height = 16
                             gO.newMap = currentMap - 1
-                            gO.newLinkX = 223
+                            gO.newLinkX = 239
                             gO.newLinkY = (i * 16) - 1
                             gO.isPortal = true
                             //shifts left right is for moving across screens horizontal
@@ -448,6 +452,155 @@ export const ZeldaGame = () => {
             }
         }
 
+        const getBounceLoc = (gObject, ignoresObjects, direction) => {
+
+            //enemy bounce 1 tile in the direction link is facing
+            let currRow = Math.floor(gObject.y/16)
+            let currCol = Math.floor(gObject.x/16)
+
+            if(direction == "up") {
+                if(gameMap[currRow - 1][currCol] == 2){
+                    gObject.bounceY = gObject.y - 16
+                    gObject.bounceX = gObject.x
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "down") {
+                if(gameMap[currRow + 1][currCol] == 2){
+                    gObject.bounceY = gObject.y + 16
+                    gObject.bounceX = gObject.x
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "left") {
+                if(gameMap[currRow][currCol - 1] == 2){
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x - 16
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+
+            if(direction == "right") {
+                if(gameMap[currRow][currCol + 1] == 2){
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x + 16
+                }
+                else {
+                    gObject.bounceY = gObject.y
+                    gObject.bounceX = gObject.x
+                }
+            }
+        }
+
+        const drawProjectiles = () => {
+            for(let i = 0; i < projectiles.length; i++){
+                if(projectiles[i].isSwordProjectile){
+                    projectiles[i].counter++
+                    if(projectiles[i].counter > 2){
+                        projectiles[i].frame++
+                        projectiles[i].counter = 0
+                        if(projectiles[i].frame > 1){
+                            projectiles[i].frame = 0
+                        }
+                    }
+                    if(projectiles[i].direction === "up"){
+                        projectiles[i].y += projectiles[i].ySpeed
+                        if(projectiles[i].frame === 0){
+                            ctx.drawImage(linkSrc, 64, 195, 8, 16, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 8, 16)
+                        }
+                        else if(projectiles[i].frame === 1){
+                            ctx.drawImage(linkSrc, 64, 255, 8, 16, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 8, 16)
+                        }
+                    }
+                    if(projectiles[i].direction === "down"){
+                        projectiles[i].y += projectiles[i].ySpeed
+                        if(projectiles[i].frame === 0){
+                            ctx.drawImage(linkSrc, 4, 195, 8, 16, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 8, 16)
+                        }
+                        else if(projectiles[i].frame === 1){
+                            ctx.drawImage(linkSrc, 4, 255, 8, 16, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 8, 16)
+                        }
+                    }
+                    if(projectiles[i].direction === "left"){
+                        projectiles[i].x += projectiles[i].xSpeed
+                        if(projectiles[i].frame === 0){
+                            ctx.drawImage(linkSrc, 30, 199, 16, 8, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 16, 8)
+                        }
+                        else if(projectiles[i].frame === 1){
+                            ctx.drawImage(linkSrc, 30, 259, 16, 8, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 16, 8)
+                        }
+                    }
+                    if(projectiles[i].direction === "right"){
+                        projectiles[i].x += projectiles[i].xSpeed
+                        if(projectiles[i].frame === 0){
+                            ctx.drawImage(linkSrc, 90, 199, 16, 8, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 16, 8)
+                        }
+                        else if(projectiles[i].frame === 1){
+                            ctx.drawImage(linkSrc, 90, 259, 16, 8, 
+                                Math.floor(projectiles[i].x), 
+                                Math.floor(projectiles[i].y), 16, 8)
+                        }
+                    }
+                    for(let j = 0; j < gameObjects.length; j ++){
+                        if(projectiles[i].x <= gameObjects[j].x +gameObjects[j].width &&
+                            projectiles[i].x + projectiles[i].width >= gameObjects[j].x &&
+                            projectiles[i].y <= gameObjects[j].y +gameObjects[j].height &&
+                            projectiles[i].y + projectiles[i].height >= gameObjects[j].y){
+                                //projectile hit detection time. I fucking hate these
+
+                                if(gameObjects[j].isEnemy){
+                                    gameObjects[j].health -= 1
+                                    gameObjects[j].needsBounce = true
+                                    getBounceLoc(gameObjects[j], false, projectiles[i].direction)
+                                    //make explosion now
+                                    let explosion = GameObject()
+                                    explosion.isAnimation = true
+                                    explosion.counter = -1
+                                    explosion.animationType = 0
+                                    explosion.x = projectiles[i].x
+                                    explosion.y = projectiles[i].y
+                                    gameObjects.push(explosion)
+                                    if(gameObjects[j].health <= 0){
+                                        playSound(deadWav)
+                                        gameObjects.splice(j, 1)
+                                    }
+                                    else{
+                                        playSound(hitWav)
+                                    }
+                                    projectiles.splice(i, 1)
+                                    break
+                                }
+                            }
+                    }
+                }
+            }
+        }
+
         const getNewCoordinates = (currentRow, currentCol, index) => {
             let randRow = Math.floor(Math.random() * 11) + 4 //get row in map from 4-15 (top 4 rows are the HUD)
             let randCol = Math.floor(Math.random() * 15) //all columns can be occupied
@@ -515,57 +668,6 @@ export const ZeldaGame = () => {
                     else {return false}
                 }
                 
-            }
-        }
-
-        const getBounceLoc = (gObject, ignoresObjects, direction) => {
-
-            //enemy bounce 1 tile in the direction link is facing
-            let currRow = Math.floor(gObject.y/16)
-            let currCol = Math.floor(gObject.x/16)
-
-            if(direction == "up") {
-                if(gameMap[currRow - 1][currCol] == 2){
-                    gObject.bounceY = gObject.y - 16
-                    gObject.bounceX = gObject.x
-                }
-                else {
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x
-                }
-            }
-
-            if(direction == "down") {
-                if(gameMap[currRow + 1][currCol] == 2){
-                    gObject.bounceY = gObject.y + 16
-                    gObject.bounceX = gObject.x
-                }
-                else {
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x
-                }
-            }
-
-            if(direction == "left") {
-                if(gameMap[currRow][currCol - 1] == 2){
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x - 16
-                }
-                else {
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x
-                }
-            }
-
-            if(direction == "right") {
-                if(gameMap[currRow][currCol + 1] == 2){
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x + 16
-                }
-                else {
-                    gObject.bounceY = gObject.y
-                    gObject.bounceX = gObject.x
-                }
             }
         }
 
@@ -1065,6 +1167,96 @@ export const ZeldaGame = () => {
                     }
                     return
                 }
+                if(gameObjects[i].isAnimation){
+                    gameObjects[i].counter++
+                    if(gameObjects[i].counter >= 1){
+                        gameObjects[i].frame++
+                        gameObjects[i].counter = 0
+                    }
+                    if(gameObjects[i].animationType === 0){
+                        //sword shot explosion
+                        if(gameObjects[i].frame === 0 || gameObjects[i].frame === 1){
+                            //draw fragments of sword explosion
+                            //top left
+                            ctx.drawImage(linkSrc, 119, 282, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //top right
+                            ctx.drawImage(linkSrc, 128, 282, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //bottom left
+                            ctx.drawImage(linkSrc, 119, 293, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                            //bottom right
+                            ctx.drawImage(linkSrc, 128, 293, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                        }
+                        else if(gameObjects[i].frame === 3 || gameObjects[i].frame === 2){
+                            //draw fragments of sword explosion
+                            //top left
+                            ctx.drawImage(linkSrc, 149, 282, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //top right
+                            ctx.drawImage(linkSrc, 158, 282, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //bottom left
+                            ctx.drawImage(linkSrc, 149, 293, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                            //bottom right
+                            ctx.drawImage(linkSrc, 158, 293, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                        }
+                        else if(gameObjects[i].frame === 4 || gameObjects[i].frame === 5){
+                            //draw fragments of sword explosion
+                            //top left
+                            ctx.drawImage(linkSrc, 119, 282, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //top right
+                            ctx.drawImage(linkSrc, 128, 282, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //bottom left
+                            ctx.drawImage(linkSrc, 119, 293, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                            //bottom right
+                            ctx.drawImage(linkSrc, 128, 293, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                        }
+                        else if(gameObjects[i].frame === 6 || gameObjects[i].frame === 7){
+                            //draw fragments of sword explosion
+                            //top left
+                            ctx.drawImage(linkSrc, 149, 282, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //top right
+                            ctx.drawImage(linkSrc, 158, 282, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y - 8 - gameObjects[i].frame, 8, 8)
+                            //bottom left
+                            ctx.drawImage(linkSrc, 149, 293, 8, 8, 
+                                gameObjects[i].x - 8 - gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                            //bottom right
+                            ctx.drawImage(linkSrc, 158, 293, 8, 8, 
+                                gameObjects[i].x + 8 + gameObjects[i].frame, 
+                                gameObjects[i].y + 8 + gameObjects[i].frame, 8, 8)
+                        }
+                        else {
+                            gameObjects.splice(i, 1)
+                        }
+                        
+                    }
+                }
             }
         }
 
@@ -1234,18 +1426,63 @@ export const ZeldaGame = () => {
                         if(lastButtonPressed == "down"){
                             ctx.drawImage(link, 0, 84, 16, 27, linkX, linkY, 16, 27)
                             gameObjectCollision(linkX + 7, linkY + 16, gameObjects, false, true)
+                            //if link has full hearts, shoot sword
+                            if(currentLinkHearts === linkHearts && canShootSword){
+                                let swordProject = GameObject()
+                                swordProject.direction = lastButtonPressed
+                                swordProject.x = linkX + 5
+                                swordProject.y = linkY + 8
+                                swordProject.ySpeed = 2
+                                swordProject.isSwordProjectile = true
+                                playSound(shootWav)
+                                projectiles.push(swordProject)
+                                canShootSword = false
+                            }
                         }
                         if(lastButtonPressed == "up"){
                             ctx.drawImage(link, 62, 84, 16, 26, linkX, linkY - 14, 16, 26)
                             gameObjectCollision(linkX + 3, linkY - 14, gameObjects, false, true)
+                            if(currentLinkHearts === linkHearts && canShootSword){
+                                let swordProject = GameObject()
+                                swordProject.direction = lastButtonPressed
+                                swordProject.x = linkX + 1
+                                swordProject.y = linkY - 6
+                                swordProject.ySpeed = -2
+                                swordProject.isSwordProjectile = true
+                                playSound(shootWav)
+                                projectiles.push(swordProject)
+                                canShootSword = false
+                            }
                         }
                         if(lastButtonPressed == "left"){
                             ctx.drawImage(link, 22, 84, 26, 27, linkX - 10, linkY - 8, 27, 27)
                             gameObjectCollision(linkX - 8, linkY + 5, gameObjects, false, true)
+                            if(currentLinkHearts === linkHearts && canShootSword){
+                                let swordProject = GameObject()
+                                swordProject.direction = lastButtonPressed
+                                swordProject.x = linkX - 12
+                                swordProject.y = linkY + 4
+                                swordProject.xSpeed = -2
+                                swordProject.isSwordProjectile = true
+                                playSound(shootWav)
+                                projectiles.push(swordProject)
+                                canShootSword = false
+                            }
                         }
                         if(lastButtonPressed == "right"){
                             ctx.drawImage(link, 84, 84, 30, 26, linkX, linkY - 8, 30, 26)
                             gameObjectCollision(linkX + 14, linkY + 5, gameObjects, false, true)
+                            if(currentLinkHearts === linkHearts && canShootSword){
+                                let swordProject = GameObject()
+                                swordProject.direction = lastButtonPressed
+                                swordProject.x = linkX
+                                swordProject.y = linkY + 3
+                                swordProject.xSpeed = 2
+                                swordProject.isSwordProjectile = true
+                                playSound(shootWav)
+                                projectiles.push(swordProject)
+                                canShootSword = false
+                            }
                         }
                     }
                     if(animationCounter >= 6){
@@ -1362,6 +1599,7 @@ export const ZeldaGame = () => {
                 drawLink()
                 gameObjectCollision(linkX, linkY, gameObjects, true)
                 drawGameObjects()
+                drawProjectiles()
                 drawHUD()
             }, 1000 / fps)
         }
