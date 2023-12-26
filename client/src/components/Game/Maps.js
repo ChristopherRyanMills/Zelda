@@ -3013,9 +3013,9 @@ let map0 = [
      gO.width = 16; 
      gO.height = 16; 
      gO.isEnemy = true; 
-     gO.enemyType = 1; 
+     gO.enemyType = 3; 
      gO.isAttacking = false; 
-     gO.health = 1; 
+     gO.health = 2; 
      gO.direction = "up"; 
      gO.speed = 2;
      gameObjects119.push(gO);

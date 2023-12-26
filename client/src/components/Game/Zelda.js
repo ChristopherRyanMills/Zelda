@@ -893,8 +893,8 @@ export const ZeldaGame = () => {
                 }
                 //draw enemies
                 if(gameObjects[i].isEnemy){
-                    //type 1 = octoroks
-                    if(gameObjects[i].enemyType == 1){
+                    //type 1 = octoroks, 3 is blue octoroks
+                    if(gameObjects[i].enemyType == 1 || gameObjects[i].enemyType == 3){
                         gameObjects[i].counter++
 
                         //using A* pathfinding from python scripts
@@ -956,39 +956,76 @@ export const ZeldaGame = () => {
                                 gameObjects[i].frame = 0
                             }
                         }
-                        if(gameObjects[i].direction == "down"){
-                            if(gameObjects[i].frame == 0){
-                                ctx.drawImage(enemy, 0, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                            if(gameObjects[i].frame == 1){
-                                ctx.drawImage(enemy, 0, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                        }
-                        else if(gameObjects[i].direction == "up"){
-                            if(gameObjects[i].frame == 0){
-                                ctx.drawImage(enemy, 60, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                            if(gameObjects[i].frame == 1){
-                                ctx.drawImage(enemy, 60, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                        }
-                        else if(gameObjects[i].direction == "left"){
-                            if(gameObjects[i].frame == 0){
-                                ctx.drawImage(enemy, 30, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                            if(gameObjects[i].frame == 1){
-                                ctx.drawImage(enemy, 30, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                        }
-                        else {
-                            if(gameObjects[i].frame == 0){
-                                ctx.drawImage(enemy, 90, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                            if(gameObjects[i].frame == 1){
-                                ctx.drawImage(enemy, 90, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
-                            }
-                        }
+                        if(gameObjects[i].enemyType == 1 ){
 
+                            if(gameObjects[i].direction == "down"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 0, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 0, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else if(gameObjects[i].direction == "up"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 60, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 60, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else if(gameObjects[i].direction == "left"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 30, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 30, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else {
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 90, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 90, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                        }
+                        else{
+
+                            if(gameObjects[i].direction == "down"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 120, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 120, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else if(gameObjects[i].direction == "up"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 180, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 180, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else if(gameObjects[i].direction == "left"){
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 150, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 150, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                            else {
+                                if(gameObjects[i].frame == 0){
+                                    ctx.drawImage(enemy, 210, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                                if(gameObjects[i].frame == 1){
+                                    ctx.drawImage(enemy, 210, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16)
+                                }
+                            }
+                        }
                         if(gameObjects[i].needsBounce){
                             if(gameObjects[i].x != gameObjects[i].bounceX){
                                 if(gameObjects[i].bounceX > gameObjects[i].x){
@@ -1071,6 +1108,7 @@ export const ZeldaGame = () => {
                             }
                         }
                     }
+                    //type 2 = ocean dudes
                     if(gameObjects[i].enemyType === 2) {
                         //water shoot boy
                         gameObjects[i].counter++
