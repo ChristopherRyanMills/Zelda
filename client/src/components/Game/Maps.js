@@ -46,7 +46,9 @@ export const GameObject = () => {
         ySpeed: 0,
         rockProjectile: false,
         needsToShoot: false,
-        shootCounter: 0
+        shootCounter: 0,
+        jumping: false,
+        jumpApex: false
     }
 }
 export const MapBundle = (m, o) => {
@@ -3013,7 +3015,7 @@ let map0 = [
      gO.width = 16; 
      gO.height = 16; 
      gO.isEnemy = true; 
-     gO.enemyType = 3; 
+     gO.enemyType = 4; 
      gO.isAttacking = false; 
      gO.health = 2; 
      gO.direction = "up"; 

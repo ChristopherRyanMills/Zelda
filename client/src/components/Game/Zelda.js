@@ -1152,6 +1152,111 @@ export const ZeldaGame = () => {
                             gameObjects[i].counter = 0
                         }
                     }
+                    //type 4 & 5 = tektites
+                    if(gameObjects[i].enemyType === 4 || gameObjects[i].enemyType === 5){
+                        gameObjects[i].counter++
+                        if(gameObjects[i].counter >= 14 && !gameObjects[i].jumping){
+                            gameObjects[i].frame++
+                            gameObjects[i].counter = 0
+                            if(gameObjects[i].frame > 1){
+                                gameObjects[i].frame = 0
+                            }
+                        }
+                        let jumpChance = Math.floor(Math.random() * 4)
+                        if(jumpChance === 0 && gameObjects[i].frame === 1 && gameObjects[i].counter === 13 && !gameObjects[i].jumping){
+                            gameObjects[i].jumping = true
+                            let xDir = Math.floor(Math.random() * 2)
+                            let yDir = Math.floor(Math.random() * 2)
+                            let xDist = Math.floor(Math.random() * 24) + 32
+                            let yDist = Math.floor(Math.random() * 24) + 16
+                            let maxHeight = Math.floor(Math.random() * 32) + 8
+                            let fallAmount = Math.floor(Math.random() * 32) + 8
+                            if(gameObjects[i].x < 40){
+                                xDir = 1
+                            }
+                            if(gameObjects[i].x > 200){
+                                xDir = 0
+                            }
+                            if(gameObjects[i].y < 40){
+                                yDir = 1
+                                maxHeight -= 10
+                            }
+                            if(gameObjects[i].y > 200){
+                                yDir = 0
+                                maxHeight += 10
+                            }
+                            gameObjects[i].jumpHeight = maxHeight
+                            gameObjects[i].fallAmount = fallAmount
+                            gameObjects[i].jumpApex = false
+                            gameObjects[i].jumpDir = xDir
+                            if(xDir === 0){
+                                gameObjects[i].nextX = gameObjects[i].x - xDist
+                            }
+                            else{
+                                gameObjects[i].nextX = gameObjects[i].x + xDist
+                            }
+                            if(yDir === 0){
+                                gameObjects[i].nextY = Math.floor(gameObjects[i].y) + yDist
+                            }
+                            else{
+                                gameObjects[i].nextY = Math.floor(gameObjects[i].y) - yDist
+                            }
+                            if(gameObjects[i].nextY % 2 === gameObjects[i].nextX % 2){
+
+                            }
+                            else {
+                                gameObjects[i].nextY -= 1
+                            }
+                        }
+                        if(gameObjects[i].jumpHeight > 0 && !gameObjects[i].jumpApex && gameObjects[i].jumping){
+                            gameObjects[i].y -= 1.3
+                            gameObjects[i].jumpHeight -= 1
+                        }
+                        else {
+                            gameObjects[i].jumpApex = true
+                        }
+                        if(gameObjects[i].jumpApex && gameObjects[i].fallAmount >= 0){
+                            gameObjects[i].fallAmount--
+                            gameObjects[i].y += 1.3
+                        }
+
+                        if(gameObjects[i].jumping){
+                            if(gameObjects[i].jumpDir === 0){
+                                gameObjects[i].x -= 1.5
+                            }
+                            else{
+                                gameObjects[i].x += 1.5
+                            }
+
+                            if(gameObjects[i].fallAmount < 0){
+                                gameObjects[i].jumping = false
+                            }
+                        }
+
+                        //draw time
+                        if(gameObjects[i].enemyType === 4){
+                            if(gameObjects[i].frame === 0){
+                                ctx.drawImage(enemySrc, 240, 180, 16, 14, 
+                                    Math.floor(gameObjects[i].x), Math.floor(gameObjects[i].y), 16, 14)
+                            }
+                            else if(gameObjects[i].frame === 1){
+                                ctx.drawImage(enemySrc, 240, 210, 16, 14, 
+                                    Math.floor(gameObjects[i].x), Math.floor(gameObjects[i].y), 16, 14)
+                            }
+                        }
+                        if(gameObjects[i].enemyType === 5){
+                            if(gameObjects[i].frame === 0){
+                                ctx.drawImage(enemySrc, 270, 180, 16, 14, 
+                                    Math.floor(gameObjects[i].x), Math.floor(gameObjects[i].y), 16, 14)
+                            }
+                            else if(gameObjects[i].frame === 1){
+                                ctx.drawImage(enemySrc, 270, 210, 16, 14, 
+                                    Math.floor(gameObjects[i].x), Math.floor(gameObjects[i].y), 16, 14)
+                            }
+                        }
+
+                        
+                    }
                 }
                 if(gameObjects[i].isRupee) {
                     //the 1 rupee alternates between 2 colors, the 5 is solid
