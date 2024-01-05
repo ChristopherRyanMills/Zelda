@@ -14,6 +14,7 @@ import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
 import shieldWav from './sounds/LOZ_Shield.wav'
 import linkHurtWav from './sounds/LOZ_Link_Hurt.wav'
+import overworldBGM from '.sounds/Overworld_edit.mp3'
 import { GameObject, MapBundle, Maps } from "./Maps"
 
 export const ZeldaGame = () => {
@@ -51,6 +52,12 @@ export const ZeldaGame = () => {
     let canShootSword = true
     let linkInvincible = false
     let invincibleTime = 0
+    let gameStarted = false
+    let callInventory = false
+
+    let bgm = new Audio()
+    bgm.src = overworldBGM
+    bgm.loop = true
 
     let lastButtonPressed = "up"
     let gO = GameObject()
@@ -85,6 +92,16 @@ export const ZeldaGame = () => {
             canAttackAgain = false
             canShootSword = true
             playSound(slashWav)
+        }
+        if(evt.keyCode == "13" && !gameStarted){
+            gameStarted = true
+            bgm.play()
+        }
+        if(evt.keyCode == "13" && gameStarted){
+            if(!callInventory){
+                callInventory = true
+            }
+            returnToGame = !returnToGame
         }
     }
     const keyUpHandler = (evt) => {
@@ -220,8 +237,15 @@ export const ZeldaGame = () => {
         let rupeeAmount = 0
         let linkHearts = 3
         let currentLinkHearts = 3
-        let keyAmount = 1
-        let bombAmount = 5
+        let keyAmount = 0
+        let bombAmount = 0
+        let inventoryOffset = 0
+        let currentItem = -1
+        let returnToGame = false
+        let inventoryItems = []
+        let triforceAmount = 0
+        let cursorX = 131
+        let cursorY = -152
 
         //!Game Object (literally everything that isn't link or the map tiles)
         // let map7_7 = [
@@ -1403,11 +1427,12 @@ export const ZeldaGame = () => {
             }
         }
 
-        const drawHUD = () => {
-            ctx.drawImage(hud, 258, 11, 256, 56, 0 ,0, 256, 56)
+        const drawHUD = (offset) => {
+            ctx.drawImage(hud, 258, 11, 256, 56, 0 ,0 + offset, 256, 56)
+            ctx.drawImage(hud, 2, 112, 16, 64, 176 , 32 + offset, 64, 16)
 
             ctx.fillStyle = "black"
-            ctx.fillRect(176, 32, 64, 16)
+            ctx.fillRect(176, 32 + offset, 64, 16)
 
             let fullHearts = Math.floor(currentLinkHearts)
             let halfHearts = currentLinkHearts - fullHearts
@@ -1422,7 +1447,7 @@ export const ZeldaGame = () => {
                     heartX -= 64
                 }
                 //draw empty hearts
-                ctx.drawImage(hud, 627, 117, 8, 8, heartX, heartY, 8, 8)
+                ctx.drawImage(hud, 627, 117, 8, 8, heartX, heartY + offset, 8, 8)
             }
             let halfHeartX = 0
             let halfHeartY = 0
@@ -1433,7 +1458,7 @@ export const ZeldaGame = () => {
                     heartY = 40 - 8
                     heartX -= 64
                 }
-                ctx.drawImage(hud, 645, 117, 8, 8, heartX, heartY, 8, 8)
+                ctx.drawImage(hud, 645, 117, 8, 8, heartX, heartY + offset, 8, 8)
                 if(i == fullHearts - 1){
                     //at end of loop
                     if(i > 6){
@@ -1448,54 +1473,54 @@ export const ZeldaGame = () => {
             }
             if(halfHearts > 0 && fullHearts >= 1){
                 //drawing half hearts
-                ctx.drawImage(hud, 636, 117, 8, 8, halfHeartX, halfHeartY, 8, 8)
+                ctx.drawImage(hud, 636, 117, 8, 8, halfHeartX, halfHeartY + offset, 8, 8)
             }
             else if(halfHearts > 0 && fullHearts == 0){
 
-                ctx.drawImage(hud, 636, 117, 8, 8, 176, 40, 8, 8)
+                ctx.drawImage(hud, 636, 117, 8, 8, 176, 40 + offset, 8, 8)
             }
 
             ctx.fillStyle = "black"
-            ctx.fillRect(96, 10, 24, 50)
+            ctx.fillRect(96, 10 + offset, 24, 50)
             //draw ruppee count
             if(rupeeAmount < 100){
-                ctx.drawImage(hud, 519, 117, 8, 8, 96, 16, 8, 8)
+                ctx.drawImage(hud, 519, 117, 8, 8, 96, 16 + offset, 8, 8)
                 //get the ones place and draw it first
                 let onesNum = rupeeAmount % 10
                 //sprite sheet, sprite sheet has the numbers on it all 8 px from each other
                 //use the remainder as the ones place and count over to the start of the numbers
                 //0 is the first number in this line
-                ctx.drawImage(hud, 528 + (8 * onesNum) + onesNum, 117, 8, 8, 96 + 16, 16, 8, 8)
+                ctx.drawImage(hud, 528 + (8 * onesNum) + onesNum, 117, 8, 8, 96 + 16, 16 + offset, 8, 8)
                 //now do the same for the 10's place
                 let tensNum = Math.floor(rupeeAmount / 10)
-                ctx.drawImage(hud, 528 + (8 * tensNum) + tensNum, 117, 8, 8, 96 + 8, 16, 8, 8)
+                ctx.drawImage(hud, 528 + (8 * tensNum) + tensNum, 117, 8, 8, 96 + 8, 16 + offset, 8, 8)
             }
             else {
                 let onesNum = rupeeAmount % 10
-                ctx.drawImage(hud, 528 + (8 * onesNum) + onesNum, 117, 8, 8, 96 + 16, 16, 8, 8)
+                ctx.drawImage(hud, 528 + (8 * onesNum) + onesNum, 117, 8, 8, 96 + 16, 16 + offset, 8, 8)
                 let hundredsNum = Math.floor(rupeeAmount / 100) * 100
                 let tensNum = ((rupeeAmount - hundredsNum) - onesNum) / 10
-                ctx.drawImage(hud, 528 + (8 * tensNum) + tensNum, 117, 8, 8, 96 + 8, 16, 8, 8)
+                ctx.drawImage(hud, 528 + (8 * tensNum) + tensNum, 117, 8, 8, 96 + 8, 16 + offset, 8, 8)
                 hundredsNum = Math.floor(rupeeAmount / 100)
-                ctx.drawImage(hud, 528 + (8 * hundredsNum) + hundredsNum, 117, 8, 8, 96, 16, 8, 8)
+                ctx.drawImage(hud, 528 + (8 * hundredsNum) + hundredsNum, 117, 8, 8, 96, 16 + offset, 8, 8)
             }
             //bombs and key draw
-            ctx.drawImage(hud, 519, 117, 8, 8, 96, 32, 8, 8)
-            ctx.drawImage(hud, 519, 117, 8, 8, 96, 41, 8, 8)
-            ctx.drawImage(hud, 528 + (8 * keyAmount) + keyAmount, 117, 8, 8, 96 + 8, 32, 8, 8)
-            ctx.drawImage(hud, 528 + (8 * bombAmount) + bombAmount, 117, 8, 8, 96 + 8, 41, 8, 8)
+            ctx.drawImage(hud, 519, 117, 8, 8, 96, 32 + offset, 8, 8)
+            ctx.drawImage(hud, 519, 117, 8, 8, 96, 41 + offset, 8, 8)
+            ctx.drawImage(hud, 528 + (8 * keyAmount) + keyAmount, 117, 8, 8, 96 + 8, 32 + offset, 8, 8)
+            ctx.drawImage(hud, 528 + (8 * bombAmount) + bombAmount, 117, 8, 8, 96 + 8, 41 + offset, 8, 8)
 
-            ctx.fillRect(128, 24, 8, 16)
-            ctx.fillRect(152, 24, 8, 16)
+            ctx.fillRect(128, 24 + offset, 8, 16)
+            ctx.fillRect(152, 24 + offset, 8, 16)
             //draw sword in hud
             //wood sword
             if(swordEquipped == 1){
-                ctx.drawImage(hud, 555, 137, 8, 16, 152, 24, 8, 16)
+                ctx.drawImage(hud, 555, 137, 8, 16, 152, 24 + offset, 8, 16)
             }
 
             //minimap fill with grey
             ctx.fillStyle = "gray"
-            ctx.fillRect(16, 8, 64, 48)
+            ctx.fillRect(16, 8 + offset, 64, 48)
         }
 
         const drawLink = () => {
@@ -1733,16 +1758,41 @@ export const ZeldaGame = () => {
                 requestAnimationFrame(draw)
                 ctx.fillStyle = "rgb(20,20,20)"
                 ctx.fillRect(0,0,256,240)
-                //game code to be run every frame
-                invincibleTime--
-                if(invincibleTime <= 0){
-                    linkInvincible = false
+                if(!gameStarted){
+                    //DrawStartScreen
                 }
-                drawMap(gameMap)
-                drawLink()
-                gameObjectCollision(linkX, linkY, gameObjects, true)
-                drawGameObjects()
-                drawProjectiles()
+                else {
+                    if(callInventory){
+                        if(!returnToGame){
+                            inventoryOffset += 2
+                            if(inventoryOffset > 184){
+                                inventoryOffset = 184
+                            }
+                        }
+                        else {
+                            // if return to game is true
+                            inventoryOffset -= 2
+                            if(inventoryOffset < 0){
+                                inventoryOffset = 0
+                                callInventory = false
+                            }
+                        }
+                        //DrawInventory(inventoryOffset)
+                    }
+                    else {
+                        //game code to be run every frame
+                        invincibleTime--
+                        if(invincibleTime <= 0){
+                            linkInvincible = false
+                        }
+                        drawMap(gameMap)
+                        drawLink()
+                        gameObjectCollision(linkX, linkY, gameObjects, true)
+                        drawGameObjects()
+                        drawProjectiles()
+                    }
+                    drawHUD(inventoryOffset)
+                }
                 drawHUD()
             }, 1000 / fps)
         }
