@@ -14,7 +14,8 @@ import hitWav from './sounds/LOZ_Enemy_Hit.wav'
 import getRupee from './sounds/LOZ_Get_Rupee.wav'
 import shieldWav from './sounds/LOZ_Shield.wav'
 import linkHurtWav from './sounds/LOZ_Link_Hurt.wav'
-import overworldBGM from '.sounds/Overworld_edit.mp3'
+import overworldBGM from './sounds/Overworld_edit.mp3'
+import cursorWav from './sounds/LOZ_Text.wav'
 import { GameObject, MapBundle, Maps } from "./Maps"
 
 export const ZeldaGame = () => {
@@ -92,6 +93,9 @@ export const ZeldaGame = () => {
             canAttackAgain = false
             canShootSword = true
             playSound(slashWav)
+        }
+        else if(evt.keyCode == "32" && callInventory){
+            isAttacking = true
         }
         if(evt.keyCode == "13" && !gameStarted){
             gameStarted = true
@@ -1431,8 +1435,8 @@ export const ZeldaGame = () => {
             ctx.drawImage(hud, 258, 11, 256, 56, 0 ,0 + offset, 256, 56)
             ctx.drawImage(hud, 2, 112, 16, 64, 176 , 32 + offset, 64, 16)
 
-            ctx.fillStyle = "black"
-            ctx.fillRect(176, 32 + offset, 64, 16)
+            //ctx.fillStyle = "black"
+            //ctx.fillRect(176, 32 + offset, 64, 16)
 
             let fullHearts = Math.floor(currentLinkHearts)
             let halfHearts = currentLinkHearts - fullHearts
@@ -1753,13 +1757,169 @@ export const ZeldaGame = () => {
             }
         }
 
+        const DrawStartScreen = () => {
+            ctx.fillStyle = "rgb(255,255,255)"
+            ctx.font = "20px Arial"
+            ctx.fillText("Press enter to start", 40, 120)
+        }
+
+        const DrawInventory = (offset) => {
+            ctx.drawImage(hud, 1, 11, 256, 88, 0, -200 + offset, 256, 88)
+            ctx.drawImage(hud, 1, 112, 256, 88, 0, -112 + offset, 256, 88)
+            ctx.drawImage(hud, 519, 42, 96, 48, 80, -112 + offset + 16, 96, 48)
+            if(leftPressed && cursorX > 132){
+                leftPressed = false
+                cursorX -= 22
+                playSound(cursorWav)
+            }
+            else if(rightPressed && cursorX < 196){
+                rightPressed = false
+                cursorX += 22
+                playSound(cursorWav)
+            }
+            else if(upPressed && cursorY + offset > 42){
+                upPressed = false
+                cursorY -= 18
+                playSound(cursorWav)
+            }
+            else if(downPressed && cursorY + offset < 43){
+                downPressed = false
+                cursorY += 18
+                playSound(cursorWav)
+            }
+            ctx.drawImage(hud, 536, 137, 16, 16, cursorX, cursorY + offset, 16, 16)
+
+            //drawing items in inventory
+            if(inventoryItems[0] != null){
+                ctx.drawImage(hud, 584, 137, 8, 16, 136, 48 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[1] != null){
+                ctx.drawImage(hud, 604, 137, 8, 16, 156, 48 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[2] != null){
+                ctx.drawImage(hud, 615, 137, 8, 16, 172, 48 + offset - 200, 8, 16)
+                ctx.drawImage(hud, 633, 137, 8, 16, 180, 48 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[3] != null){
+                ctx.drawImage(hud, 653, 137, 8, 16, 200, 48 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[4] != null){
+                ctx.drawImage(hud, 664, 137, 8, 16, 136, 66 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[5] != null){
+                ctx.drawImage(hud, 675, 137, 8, 16, 156, 66 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[6] != null){
+                ctx.drawImage(hud, 704, 137, 8, 16, 180, 66 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[7] != null){
+                ctx.drawImage(hud, 715, 137, 8, 16, 200, 66 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[8] != null){
+                ctx.drawImage(hud, 519, 156, 16, 16, 156, 26 + offset - 200, 16, 16)
+            }
+            if(inventoryItems[9] != null){
+                ctx.drawImage(hud, 538, 156, 8, 16, 172, 26 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[10] != null){
+                ctx.drawImage(hud, 549, 156, 8, 16, 180, 26 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[11] != null){
+                ctx.drawImage(hud, 560, 156, 16, 16, 196, 26 + offset - 200, 16, 16)
+            }
+            if(inventoryItems[12] != null){
+                ctx.drawImage(hud, 579, 156, 8, 16, 204, 26 + offset - 200, 8, 16)
+            }
+            if(inventoryItems[13] != null){
+                ctx.drawImage(hud, 590, 156, 8, 16, 212, 26 + offset - 200, 8, 16)
+            }
+
+            //selecting items from menu
+            if(cursorX === 131 && cursorY === -152){
+                if(isAttacking && inventoryItems[0] != null){
+                    currentItem = 0
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 153 && cursorY === -152){
+                if(isAttacking && inventoryItems[1] != null){
+                    currentItem = 1
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 175 && cursorY === -152){
+                if(isAttacking && inventoryItems[2] != null){
+                    currentItem = 2
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 197 && cursorY === -152){
+                if(isAttacking && inventoryItems[3] != null){
+                    currentItem = 3
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 131 && cursorY === -134){
+                if(isAttacking  && inventoryItems[4] != null){
+                    currentItem = 4
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 153 && cursorY === -134){
+                if(isAttacking && inventoryItems[5] != null){
+                    currentItem = 5
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 175 && cursorY === -134){
+                if(isAttacking && inventoryItems[6] != null){
+                    currentItem = 6
+                    isAttacking = false
+                }
+            }
+            if(cursorX === 197 && cursorY === -134){
+                if(isAttacking && inventoryItems[7] != null){
+                    currentItem = 7
+                    isAttacking = false
+                }
+            }
+
+            switch(currentItem){
+                case 0: 
+                    ctx.drawImage(hud, 584, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 1: 
+                    ctx.drawImage(hud, 604, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 2: 
+                    ctx.drawImage(hud, 615, 137, 8, 16, 65, 48 + offset - 200, 8, 16)
+                    ctx.drawImage(hud, 633, 137, 8, 16, 73, 48 + offset - 200, 8, 16)
+                    break
+                case 3: 
+                    ctx.drawImage(hud, 653, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 4: 
+                    ctx.drawImage(hud, 664, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 5: 
+                    ctx.drawImage(hud, 675, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 6: 
+                    ctx.drawImage(hud, 704, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+                case 7: 
+                    ctx.drawImage(hud, 715, 137, 8, 16, 69, 48 + offset - 200, 8, 16)
+                    break
+            }
+        }
+
         const draw = () => {
             setTimeout(() => {
                 requestAnimationFrame(draw)
                 ctx.fillStyle = "rgb(20,20,20)"
                 ctx.fillRect(0,0,256,240)
                 if(!gameStarted){
-                    //DrawStartScreen
+                    DrawStartScreen()
                 }
                 else {
                     if(callInventory){
@@ -1777,7 +1937,7 @@ export const ZeldaGame = () => {
                                 callInventory = false
                             }
                         }
-                        //DrawInventory(inventoryOffset)
+                        DrawInventory(inventoryOffset)
                     }
                     else {
                         //game code to be run every frame
