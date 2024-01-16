@@ -16,6 +16,9 @@ import shieldWav from './sounds/LOZ_Shield.wav'
 import linkHurtWav from './sounds/LOZ_Link_Hurt.wav'
 import overworldBGM from './sounds/Overworld_edit.mp3'
 import cursorWav from './sounds/LOZ_Text.wav'
+import bombDropWav from './sounds/LOZ_Bomb_Drop.wav'
+import keyAppearWav from './sounds/LOZ_Key_Appear.wav'
+import secretWav from './sounds/LOZ_Secret.wav'
 import { GameObject, MapBundle, Maps } from "./Maps"
 
 export const ZeldaGame = () => {
@@ -48,6 +51,7 @@ export const ZeldaGame = () => {
 
     let hasSword = false
     let isAttacking = false
+    let bPressed = false
     let canAttackAgain = true
     let linkNeedsToBounce = false
     let canShootSword = true
@@ -85,6 +89,9 @@ export const ZeldaGame = () => {
         else if(evt.keyCode == "40") {
             downPressed = true
             lastButtonPressed = "down"
+        }
+        else if(evt.keyCode == "66") {
+            bPressed = true
         }
         if(evt.keyCode == "32" && canAttackAgain && hasSword){
             //on spacebar, enter attack state
@@ -140,6 +147,8 @@ export const ZeldaGame = () => {
         let maps = Maps()
         let gameObjects = maps[119].gameobjects
         let projectiles = []
+        let bombs = []
+        let attackCounter = 0
         let gameMap = maps[119].map
         let currentMap = 119
         const portalExists = (x, y) => {
@@ -699,7 +708,8 @@ export const ZeldaGame = () => {
             }
         }
 
-        const gameObjectCollision = (x, y, objects, isLink, isSword) => {
+        const gameObjectCollision = (x, y, objects, isLink, isSword, isBomb, isCandle, isArrow, direction) => {
+            //! Remember to change the gameObjectCollision functions as you added more params
             if (isLink) {
                 for(let i = 0; i<objects.length; i++){
                     if(x <= objects[i].x + objects[i].width &&
@@ -791,6 +801,78 @@ export const ZeldaGame = () => {
                         }
                 }
             }
+            else if(isBomb){
+                for(let i=0; i < objects.length; i++){
+                    if(x - 8 <= objects[i].x + objects[i].width &&
+                        x + 24 >= objects[i].x &&
+                        y - 8 <= objects[i].y + objects[i].height &&
+                        y + 24 >= objects[i].y){
+                            if(objects[i].isEnemy){
+                                objects[i].health -= 1
+                                objects[i].needsBounce = true
+                                getBounceLoc(objects[i], false, direction)
+                                if(objects[i].health <= 0){
+                                    playSound(deadWav)
+                                    let count = 0
+                                    for(let j=0; j < objects.length; j++){
+                                        if(objects[i].isEnemy){
+                                            count++
+                                        }
+                                    }
+                                    if(count == 1){
+                                        if(objects[i].groupItemNumber == 1){
+                                            let item = GameObject()
+                                            item.x = objects[i].groupItemX
+                                            item.y = objects[i].groupItemY
+                                            item.width = 8
+                                            item.height = 16
+                                            item.isKeyPickup = true
+                                            playSound(keyAppearWav)
+                                            gameObjects.push(item)
+                                        }
+                                        if(objects[i].groupItemNumber == 2){
+                                            //heart container
+                                            let item = GameObject()
+                                            item.x = objects[i].groupItemX
+                                            item.y = objects[i].groupItemY
+                                            item.width = 8
+                                            item.height = 16
+                                            item.isPickupItem = true
+                                            item.pickupItemNum = 17
+                                            playSound(keyAppearWav)
+                                            gameObjects.push(item)
+                                        }
+                                    }
+                                    if(objects[i].openClosedDoor){
+                                        //if all enemies killed, open door
+                                    }
+                                    objects.splice(i, 1)
+                                }
+                                else {
+                                    playSound(hitWav)
+                                }
+                            }
+                            else if(objects[i].isBombable && objects[i].isDoor){
+                                //secret door code goes here
+                            }
+                            else if(objects[i].isBombable){
+                                //overworld bombable walls
+                                let opening = GameObject()
+                                opening.x = objects[i].x
+                                opening.y = objects[i].y
+                                opening.width = 16
+                                opening.height = 8
+                                opening.newMap = objects[i].newMap
+                                opening.newLinkX = 120
+                                opening.newLinkY = 220
+                                opening.isStairs = true
+                                opening.isPortal = true
+                                gameObjects.push(opening)
+                                playSound(secretWav)
+                            }
+                        }
+                }
+            }
             else {
                 //sword hit box, flipped if facing up or down
                 let swordW = 11
@@ -827,6 +909,10 @@ export const ZeldaGame = () => {
 
         const drawGameObjects = () => {
             for(let i=0; i<gameObjects.length; i++){
+                if(gameObjects[i].isSaleRupee){
+                    ctx.drawImage(linkSrc, 274, 225, 8, 16, gameObjects[i].x, gameObjects[i].y, 8, 16)
+                    
+                }
                 if(gameObjects[i].isPickupItem){
                     //0 - boomerang
                     //1 - bomb
@@ -1578,6 +1664,38 @@ export const ZeldaGame = () => {
             }
             else{
                 //attack animations
+                if(bPressed && currentItem === 1){
+                    //draw bomb and add to world object
+                    animationCounter++
+                    let adjustedX = linkX
+                    let adjustedY = linkY
+                    if(lastButtonPressed == "down"){
+                        ctx.drawImage(linkSrc, 0, 60, 16, 16, linkX, linkY, 16, 16)
+                        adjustedY += 16
+                    }
+                    else if(lastButtonPressed == "up"){
+                        ctx.drawImage(linkSrc, 62, 60, 16, 16, linkX, linkY, 16, 16)
+                        adjustedY -= 8
+                    }
+                    else if(lastButtonPressed == "left"){
+                        ctx.drawImage(linkSrc, 30, 60, 16, 16, linkX, linkY, 16, 16)
+                        adjustedX -= 8
+                    }
+                    else if(lastButtonPressed == "right"){
+                        ctx.drawImage(linkSrc, 91, 60, 16, 16, linkX, linkY, 16, 16)
+                        adjustedX += 16
+                    }
+                    if(animationCounter > 10){
+                        bPressed = false
+                        animationCounter = 0
+                        let bomb = GameObject()
+                        bomb.x = adjustedX
+                        bomb.y = adjustedY
+                        bomb.isBomb = true
+                        bombs.push(bomb)
+                        playSound(bombDropWav)
+                    }
+                }
                 if(isAttacking && hasSword){
                     if(currentAnimation == 0){
                         if(lastButtonPressed == "down"){
