@@ -2085,3 +2085,5 @@ export const ZeldaGame = () => {
         </>
     )
 }
+
+//this is where I hide updates. People don't understand how sad I am. I think I will write small memiors here daily and see what happens.
